@@ -38,20 +38,37 @@ export const TRACK_TAGS = 'tags:acdelysM'
 
 let rpcId = 0
 
-export async function rpc<T = Record<string, unknown>>(player: string, cmd: (string | number)[]): Promise<T> {
+// LMS can stall for seconds (it's single-threaded and resizes artwork
+// in-process); past this a request is treated as lost rather than left to
+// hold one of the browser's few connections to the server.
+const RPC_TIMEOUT_MS = 15000
+
+export async function rpc<T = Record<string, unknown>>(
+  player: string,
+  cmd: (string | number)[],
+  timeoutMs = RPC_TIMEOUT_MS,
+): Promise<T> {
   const res = await fetch('/jsonrpc.js', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ id: ++rpcId, method: 'slim.request', params: [player, cmd] }),
+    signal: AbortSignal.timeout(timeoutMs),
   })
   if (!res.ok) throw new Error(`LMS returned ${res.status}`)
   const body = await res.json()
   return (body.result ?? {}) as T
 }
 
+// LMS pre-caches artwork at the sizes skins register (Material registers
+// these, in _f mode). Any other size or mode is resized on request, and LMS
+// does that on its one thread, stalling every other request including
+// play/pause. So round up to a size it already has.
+const CACHED_SIZES = [150, 300, 600]
+
 /** Empty when LMS has no artwork for the track (no coverid), so callers can draw their own. */
 export function coverUrl(coverid: string | undefined, size = 600) {
-  return coverid ? `/music/${coverid}/cover_${size}x${size}_o` : ''
+  const s = CACHED_SIZES.find((c) => c >= size) ?? CACHED_SIZES[CACHED_SIZES.length - 1]
+  return coverid ? `/music/${coverid}/cover_${s}x${s}_f` : ''
 }
 
 export async function getPlayers(): Promise<Player[]> {
@@ -75,8 +92,8 @@ function toStatus(r: RawStatus): Status {
   }
 }
 
-export async function getStatus(player: string): Promise<Status> {
-  return toStatus(await rpc<RawStatus>(player, ['status', '-', 1, 'tags:']))
+export async function getStatus(player: string, timeoutMs?: number): Promise<Status> {
+  return toStatus(await rpc<RawStatus>(player, ['status', '-', 1, 'tags:'], timeoutMs))
 }
 
 export async function getQueue(player: string, max = 1000): Promise<{ status: Status; tracks: Track[] }> {
@@ -87,7 +104,8 @@ export async function getQueue(player: string, max = 1000): Promise<{ status: St
 // --- transport -------------------------------------------------------------
 
 export const play = (p: string) => rpc(p, ['play'])
-export const pause = (p: string) => rpc(p, ['pause'])
+// Bare `pause` toggles, so a press made on stale status would do the opposite.
+export const pause = (p: string) => rpc(p, ['pause', 1])
 export const next = (p: string) => rpc(p, ['playlist', 'index', '+1'])
 export const prev = (p: string) => rpc(p, ['playlist', 'index', '-1'])
 export const jumpTo = (p: string, i: number) => rpc(p, ['playlist', 'index', i])

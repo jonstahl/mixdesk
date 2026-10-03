@@ -38,7 +38,15 @@ export default function App() {
   const onLibrary = !onQueue && route.page !== 'settings'
   const [players, setPlayers] = useState<lms.Player[]>([])
   const [player, setPlayer] = useState<string | null>(null)
-  const { status, tracks, error, refresh, clock } = usePlayer(player)
+  const { status, tracks, error, refresh, patch, clock } = usePlayer(player)
+
+  // Flip the button at once; LMS's answer (or the next poll) confirms it.
+  const togglePlay = () => {
+    if (!player) return
+    const playing = status?.mode === 'play'
+    patch({ mode: playing ? 'pause' : 'play' })
+    ;(playing ? lms.pause(player) : lms.play(player)).catch(() => {}).then(refresh)
+  }
   const [selected, setSelected] = useState<number | null>(null)
   const [leaving, setLeaving] = useState<Set<number>>(new Set())
   const [draft, setDraft] = useState<DraftState | null>(null)
@@ -282,7 +290,7 @@ export default function App() {
     }
     if (e.key === ' ' && player) {
       e.preventDefault()
-      ;(status?.mode === 'play' ? lms.pause(player) : lms.play(player)).then(refresh)
+      togglePlay()
       return
     }
     // q and l switch views. While a draft is open they do nothing, since the
@@ -412,7 +420,7 @@ export default function App() {
           track={current}
           status={status}
           clock={clock}
-          onToggle={() => player && (status?.mode === 'play' ? lms.pause(player) : lms.play(player)).then(refresh)}
+          onToggle={togglePlay}
           onPrev={() => player && enqueue(() => lms.prev(player))}
           onNext={() => player && enqueue(() => lms.next(player))}
           onSeek={(s) => player && lms.seek(player, s).then(refresh)}
