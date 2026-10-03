@@ -46,9 +46,10 @@ would fail.
 | `Esc` | | Discard |
 | `u` / `⌘Z` | Undo the last cut or queue replacement | |
 | Space | Play / pause | Play / pause |
+| `q` / `l` | Go to the queue / library | |
 
 Any other letter opens search with that letter typed in, so you can type
-without opening search first.
+without opening search first. Searches starting with q or l need `/` first.
 
 In search, `Enter` does the obvious thing for each kind of result and the
 modifiers mean the same everywhere:

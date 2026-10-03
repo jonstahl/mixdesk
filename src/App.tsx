@@ -244,8 +244,8 @@ export default function App() {
 
   const keys = useRef<(e: KeyboardEvent) => void>(() => {})
   keys.current = (e: KeyboardEvent) => {
-    const el = e.target as HTMLElement
-    if (el.closest('input, select, textarea')) return
+    const el = e.target
+    if (el instanceof Element && el.closest('input, select, textarea')) return
     if (searchingRef.current) {
       if (e.key.length === 1 && !e.metaKey && !e.ctrlKey) setInitialTerm((t) => t + e.key)
       if (e.key !== 'Escape') e.preventDefault()
@@ -271,6 +271,13 @@ export default function App() {
     if (e.key === ' ' && player) {
       e.preventDefault()
       ;(status?.mode === 'play' ? lms.pause(player) : lms.play(player)).then(refresh)
+      return
+    }
+    // q and l switch views. While a draft is open they do nothing, since the
+    // draft covers both views and leaving it should be deliberate (Esc).
+    if (e.key === 'q' || e.key === 'l') {
+      e.preventDefault()
+      if (!draft) go({ page: e.key === 'q' ? 'queue' : 'library' })
       return
     }
     const down = e.key === 'ArrowDown' || e.key === 'j'
@@ -329,11 +336,11 @@ export default function App() {
     <div className="desk">
       <header className="topbar">
         <nav className="views" aria-label="View">
-          <a href={href({ page: 'queue' })} aria-current={onQueue ? 'page' : undefined}>
+          <a href={href({ page: 'queue' })} aria-current={onQueue ? 'page' : undefined} title="Queue (Q)">
             Queue
             {tracks.length > cur + 1 && <span className="views-count">{tracks.length - cur - 1}</span>}
           </a>
-          <a href={href({ page: 'library' })} aria-current={!onQueue ? 'page' : undefined}>
+          <a href={href({ page: 'library' })} aria-current={!onQueue ? 'page' : undefined} title="Library (L)">
             Library
           </a>
         </nav>
