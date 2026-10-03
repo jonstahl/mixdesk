@@ -629,6 +629,14 @@ input[type='range'] {
   color: var(--dim);
 }
 
+.search-notice {
+  margin: 0;
+  padding: 10px 20px;
+  border-top: 1px solid var(--line);
+  color: var(--coral);
+  font-size: 13px;
+}
+
 .search-keys {
   display: flex;
   gap: 20px;

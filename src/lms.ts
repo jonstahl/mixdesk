@@ -12,6 +12,7 @@ export type Track = {
   year?: string
   tracknum?: string
   disc?: string
+  musicmagic_mixable?: string
   'playlist index'?: number
 }
 
@@ -29,9 +30,10 @@ export type Status = {
 
 export type Player = { playerid: string; name: string; connected: number; isplaying: number }
 
-// Tag letters: a artist, c coverid, d duration, e album_id, l album, y year (t tracknum, i disc for album pages).
+// Tag letters: a artist, c coverid, d duration, e album_id, l album, y year,
+// M MusicIP mixable (t tracknum, i disc for album pages).
 // Album title is silently dropped without `l`.
-export const TRACK_TAGS = 'tags:acdely'
+export const TRACK_TAGS = 'tags:acdelyM'
 
 let rpcId = 0
 
@@ -130,6 +132,28 @@ export type Seed = { kind: 'track' | 'album' | 'artist' | 'genre'; id: string | 
 
 const SEED_PARAM: Record<Seed['kind'], string> = { track: 'song_id', album: 'album_id', artist: 'artist_id', genre: 'genre_id' }
 const seedParam = (s: Seed) => `${SEED_PARAM[s.kind]}:${s.id}`
+
+/** MusicIP can only mix from tracks it has analysed; remote tracks never carry the flag. */
+export const isMixable = (t?: Track) => t?.musicmagic_mixable === '1'
+
+/**
+ * Albums, artists and genres don't expose the mixable flag in browse queries,
+ * but the MusicIP plugin only adds "Create MusicIP Mix" to an object's info
+ * menu when it's mixable, which is how Material decides too.
+ */
+export function canMix(kind: 'album' | 'artist' | 'genre', id: string | number): Promise<boolean> {
+  return cached(`canmix ${kind} ${id}`, async () => {
+    const r = await rpc<{ item_loop?: { actions?: { go?: { cmd?: string[] } } }[] }>('', [
+      `${kind}info`,
+      'items',
+      0,
+      100,
+      `${kind}_id:${id}`,
+      'menu:1',
+    ])
+    return (r.item_loop ?? []).some((i) => i.actions?.go?.cmd?.join(' ') === 'musicip mix')
+  })
+}
 
 /** Ask MusicIP for a mix without touching the queue. */
 export async function previewMix(p: string, seed: Seed): Promise<Track[]> {

@@ -171,7 +171,11 @@ export default function App() {
     [player],
   )
 
-  const mixFrom = (t: Track) => startDraft({ kind: 'track', id: t.id, label: t.title })
+  // Mix buttons are hidden for unanalysed tracks; this covers the M key.
+  const mixFrom = (t: Track) => {
+    if (lms.isMixable(t)) startDraft({ kind: 'track', id: t.id, label: t.title })
+    else setToast({ text: `MusicIP hasn't analysed “${t.title}”, so it can't mix from it` })
+  }
 
   const varietyTimer = useRef(0)
   const changeVariety = (v: number) => {

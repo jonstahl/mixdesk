@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { coverUrl, search, type Album, type Artist, type Seed, type Track } from './lms'
+import { coverUrl, isMixable, search, type Album, type Artist, type Seed, type Track } from './lms'
 import { Cover, fmtDuration } from './ui'
 
 type Hit =
@@ -19,6 +19,7 @@ export function Search(props: {
   const [term, setTerm] = useState(props.initialTerm ?? '')
   const [results, setResults] = useState<Results | null>(null)
   const [active, setActive] = useState(0)
+  const [notice, setNotice] = useState('')
   const input = useRef<HTMLInputElement>(null)
   const list = useRef<HTMLDivElement>(null)
 
@@ -38,6 +39,7 @@ export function Search(props: {
       if (!stale) {
         setResults(r)
         setActive(0)
+        setNotice('')
       }
     }, 180)
     return () => {
@@ -70,6 +72,12 @@ export function Search(props: {
         ? { kind: 'album', id: h.item.id, label: h.item.album }
         : { kind: 'artist', id: h.item.id, label: h.item.artist }
 
+  const choose = (h: Hit) => {
+    if (h.kind === 'track' && !isMixable(h.item))
+      setNotice(`MusicIP hasn't analysed “${h.item.title}”, so it can't mix from it. Shift+Enter plays it next.`)
+    else props.onMix(seedOf(h))
+  }
+
   const onKey = (e: React.KeyboardEvent) => {
     const h = hits[active]
     if (e.key === 'ArrowDown') {
@@ -86,7 +94,7 @@ export function Search(props: {
       else if (e.altKey && h.kind === 'track') props.onTrack(h.item, 'add')
       else if (e.shiftKey && h.kind === 'album') props.onAlbum(h.item, 'insert')
       else if (e.altKey && h.kind === 'album') props.onAlbum(h.item, 'add')
-      else props.onMix(seedOf(h))
+      else choose(h)
     }
   }
 
@@ -105,7 +113,7 @@ export function Search(props: {
               key={`${kind}-${h.item.id}`}
               className={'hit' + (i === active ? ' is-active' : '')}
               onMouseMove={() => setActive(i)}
-              onClick={() => props.onMix(seedOf(h))}
+              onClick={() => choose(h)}
             >
               {h.kind === 'track' && (
                 <>
@@ -117,7 +125,7 @@ export function Search(props: {
                       <span className="row-album">{h.item.album}</span>
                     </span>
                   </span>
-                  <span className="row-aside">{fmtDuration(h.item.duration)}</span>
+                  <span className="row-aside">{isMixable(h.item) ? fmtDuration(h.item.duration) : 'Not analysed'}</span>
                 </>
               )}
               {h.kind === 'album' && (
@@ -161,6 +169,7 @@ export function Search(props: {
           {group('Artists', 'artist')}
           {group('Albums', 'album')}
         </div>
+        {notice && <p className="search-notice">{notice}</p>}
         <p className="search-keys">
           <span><kbd>Enter</kbd> mix from it</span>
           <span><kbd>Shift</kbd><kbd>Enter</kbd> play next</span>

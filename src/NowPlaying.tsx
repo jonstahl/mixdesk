@@ -1,5 +1,5 @@
 import { useEffect, useRef, type RefObject } from 'react'
-import { coverUrl, type Status, type Track } from './lms'
+import { coverUrl, isMixable, type Status, type Track } from './lms'
 import { Cover, fmtDuration, Icon } from './ui'
 
 type Clock = RefObject<{ at: number; time: number }>
@@ -45,9 +45,11 @@ export function NowPlaying(props: {
         <button className="icon-btn" onClick={props.onNext} aria-label="Next track">
           <Icon name="next" size={26} />
         </button>
-        <button className="text-btn transport-mix" onClick={() => props.onMix(track)}>
-          <Icon name="mix" size={18} /> Mix from this
-        </button>
+        {isMixable(track) && (
+          <button className="text-btn transport-mix" onClick={() => props.onMix(track)}>
+            <Icon name="mix" size={18} /> Mix from this
+          </button>
+        )}
       </div>
     </section>
   )

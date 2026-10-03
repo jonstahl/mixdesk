@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { coverUrl, type Track } from './lms'
+import { coverUrl, isMixable, type Track } from './lms'
 import { Cover, fmtClock, fmtDuration, Icon, type IconName } from './ui'
 
 export type RowAction = { icon: IconName; label: string; key?: string; run: () => void; danger?: boolean }
@@ -90,7 +90,7 @@ export function RunningOrder(props: {
 
   const actionsFor = (i: number, tr: Track): RowAction[] => [
     { icon: 'playNext', label: 'Play next', key: 'N', run: () => props.onPlayNext(i) },
-    { icon: 'mix', label: 'Mix from this', key: 'M', run: () => props.onMix(tr) },
+    ...(isMixable(tr) ? [{ icon: 'mix', label: 'Mix from this', key: 'M', run: () => props.onMix(tr) } as RowAction] : []),
     { icon: 'cut', label: 'Cut', key: 'X', run: () => props.onCut(i), danger: true },
   ]
   const row = (tr: Track, i: number, extra: Partial<Parameters<typeof TrackRow>[0]> = {}) => (

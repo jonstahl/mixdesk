@@ -307,6 +307,17 @@ function YearIndex() {
 
 // --- album lists -----------------------------------------------------------------------
 
+/** Renders only once LMS confirms MusicIP can mix this, so a dead button never appears. */
+function MixButton(props: { kind: 'album' | 'artist' | 'genre'; id: string | number; label: string; onMix: (s: Seed) => void; text: string }) {
+  const ok = useLoad(() => lms.canMix(props.kind, props.id), [props.kind, props.id])
+  if (!ok.data) return null
+  return (
+    <button className="primary-btn" onClick={() => props.onMix({ kind: props.kind, id: props.id, label: props.label })}>
+      <Icon name="mix" size={18} /> {props.text}
+    </button>
+  )
+}
+
 function ArtistPage(props: Props & { id: string; name: string }) {
   const s = useLoad(() => lms.getAlbums([`artist_id:${props.id}`], 'yearalbum'), [props.id])
   return (
@@ -317,9 +328,7 @@ function ArtistPage(props: Props & { id: string; name: string }) {
         title={props.name}
         meta={s.data && `${s.data.length} ${s.data.length === 1 ? 'album' : 'albums'}`}
       >
-        <button className="primary-btn" onClick={() => props.onMix({ kind: 'artist', id: props.id, label: props.name })}>
-          <Icon name="mix" size={18} /> Mix from {props.name}
-        </button>
+        <MixButton kind="artist" id={props.id} label={props.name} onMix={props.onMix} text={`Mix from ${props.name}`} />
       </PageHead>
       <Status {...s} empty={s.data?.length === 0} />
       {s.data && <AlbumGrid albums={s.data} show="year" />}
@@ -337,9 +346,7 @@ function GenrePage(props: Props & { id: string; name: string }) {
         title={props.name}
         meta={s.data && `${n(s.data.length)} ${s.data.length === 1 ? 'album' : 'albums'}`}
       >
-        <button className="primary-btn" onClick={() => props.onMix({ kind: 'genre', id: props.id, label: props.name })}>
-          <Icon name="mix" size={18} /> Mix from {props.name}
-        </button>
+        <MixButton kind="genre" id={props.id} label={props.name} onMix={props.onMix} text={`Mix from ${props.name}`} />
       </PageHead>
       <Status {...s} empty={s.data?.length === 0} />
       {s.data && <AlbumGrid albums={s.data} />}
@@ -431,9 +438,7 @@ function AlbumPage(props: Props & { id: string }) {
               {list.length} {list.length === 1 ? 'track' : 'tracks'}, {fmtDuration(total)}
             </p>
             <div className="page-actions">
-              <button className="primary-btn" onClick={() => props.onMix({ kind: 'album', id: a.id, label: a.album })}>
-                <Icon name="mix" size={18} /> Mix from this album
-              </button>
+              <MixButton kind="album" id={a.id} label={a.album} onMix={props.onMix} text="Mix from this album" />
               <button className="text-btn" onClick={() => props.onAlbum(a, 'load')}>
                 <Icon name="play" size={18} /> Play
               </button>
@@ -450,6 +455,7 @@ function AlbumPage(props: Props & { id: string }) {
       <ol className="rows album-tracks">
         {list.map((t, i) => {
           const showDisc = multiDisc && (i === 0 || list[i - 1].disc !== t.disc)
+          const mix = lms.isMixable(t) ? () => props.onMix({ kind: 'track', id: t.id, label: t.title }) : undefined
           return (
             <FragmentRow key={t.id} heading={showDisc ? `Disc ${t.disc ?? 1}` : undefined}>
               <TrackRow
@@ -458,9 +464,9 @@ function AlbumPage(props: Props & { id: string }) {
                 sub={t.artist && t.artist !== a?.artist ? t.artist : undefined}
                 selected={sel === i}
                 onSelect={() => setSel(i)}
-                onActivate={() => props.onMix({ kind: 'track', id: t.id, label: t.title })}
+                onActivate={mix}
                 actions={[
-                  { icon: 'mix', label: 'Mix from this', run: () => props.onMix({ kind: 'track', id: t.id, label: t.title }) },
+                  ...(mix ? [{ icon: 'mix', label: 'Mix from this', run: mix } as const] : []),
                   { icon: 'playNext', label: 'Play next', run: () => props.onTrack(t, 'insert') },
                   { icon: 'add', label: 'Add to end', run: () => props.onTrack(t, 'add') },
                 ]}
