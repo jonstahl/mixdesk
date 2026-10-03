@@ -859,8 +859,18 @@ input[type='range'] {
   font-variation-settings: 'opsz' 24, 'wdth' 85;
 }
 
-.shelf-head .text-btn {
+.shelf-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
   margin-right: -10px;
+}
+
+/* Paging buttons are for a mouse wheel; touch swipes the row directly. */
+@media (hover: none) {
+  .shelf-page {
+    display: none;
+  }
 }
 
 .album-grid {
@@ -870,6 +880,25 @@ input[type='range'] {
   margin: 0;
   padding: 0;
   list-style: none;
+}
+
+.album-row {
+  grid-template-columns: none;
+  /* Two rows that scroll together; albums run down each column, newest first. */
+  grid-template-rows: repeat(2, auto);
+  grid-auto-flow: column;
+  grid-auto-columns: 160px;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x proximity;
+  scrollbar-width: thin;
+  padding-bottom: 10px;
+}
+
+.album-row .tile {
+  scroll-snap-align: start;
+  /* Tiles that change size as they come into view throw off a smooth scroll. */
+  content-visibility: visible;
 }
 
 .tile {
@@ -1207,6 +1236,11 @@ input[type='range'] {
 
   .album-grid {
     grid-template-columns: repeat(auto-fill, minmax(112px, 1fr));
+  }
+
+  .album-row {
+    grid-template-columns: none;
+    grid-auto-columns: 120px;
   }
 
   .album-head {

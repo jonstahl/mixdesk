@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { useEffect, useMemo, useRef, useState, type ReactNode, type Ref } from 'react'
 import * as lms from './lms'
 import type { Album, AlbumSort, Seed, Track } from './lms'
 import { href, type Route } from './router'
@@ -97,9 +97,12 @@ const n = (x: number) => x.toLocaleString()
 
 // --- album grid ------------------------------------------------------------------
 
-function AlbumGrid({ albums, show = 'artist' }: { albums: Album[]; show?: 'artist' | 'year' | 'both' }) {
+type AlbumGridProps = { albums: Album[]; show?: 'artist' | 'year' | 'both'; row?: boolean; ref?: Ref<HTMLUListElement> }
+
+/** A wrapping grid, or with `row` a single line that scrolls sideways. */
+function AlbumGrid({ albums, show = 'artist', row, ref }: AlbumGridProps) {
   return (
-    <ul className="album-grid">
+    <ul ref={ref} className={row ? 'album-grid album-row' : 'album-grid'}>
       {albums.map((a) => (
         <li key={a.id} className="tile">
           <a href={href({ page: 'album', id: String(a.id) })}>
@@ -124,7 +127,13 @@ function LibraryHome() {
   const artists = useLoad(() => lms.getAlbumArtists(), [])
   const genres = useLoad(() => lms.getGenres(), [])
   const years = useLoad(() => lms.getYears(), [])
-  const fresh = useLoad(() => lms.getAlbums([], 'new', 12), [])
+  const fresh = useLoad(() => lms.getAlbums([], 'new', 40), [])
+  const freshRow = useRef<HTMLUListElement>(null)
+  // A mouse wheel only scrolls vertically, so the row gets buttons too.
+  const page = (dir: 1 | -1) => {
+    const el = freshRow.current
+    if (el) el.scrollBy({ left: dir * el.clientWidth * 0.85, behavior: 'smooth' })
+  }
   const [shuffle, setShuffle] = useState(0)
   const random = useLoad(() => lms.getAlbums([], 'random', 12), [shuffle])
 
@@ -152,12 +161,20 @@ function LibraryHome() {
       <section className="shelf">
         <header className="shelf-head">
           <h2>New music</h2>
-          <a className="text-btn" href={href({ page: 'new' })}>
-            See all
-          </a>
+          <div className="shelf-actions">
+            <button className="icon-btn shelf-page" onClick={() => page(-1)} aria-label="Scroll back">
+              <Icon name="left" />
+            </button>
+            <button className="icon-btn shelf-page" onClick={() => page(1)} aria-label="Scroll on">
+              <Icon name="right" />
+            </button>
+            <a className="text-btn" href={href({ page: 'new' })}>
+              See all
+            </a>
+          </div>
         </header>
         <Status {...fresh} />
-        {fresh.data && <AlbumGrid albums={fresh.data} />}
+        {fresh.data && <AlbumGrid ref={freshRow} albums={fresh.data} row />}
       </section>
 
       <section className="shelf">
