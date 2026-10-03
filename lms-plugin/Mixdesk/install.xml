@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<extension>
+	<id>afe6075b-37ba-4df2-b5b8-d46ae3806aec</id>
+	<name>PLUGIN_MIXDESK</name>
+	<module>Plugins::Mixdesk::Plugin</module>
+	<version>0.1.0</version>
+	<description>PLUGIN_MIXDESK_DESC</description>
+	<creator>Jon Stahl</creator>
+	<category>skin</category>
+	<defaultState>enabled</defaultState>
+	<type>2</type>
+	<targetApplication>
+		<id>Lyrion Music Server</id>
+		<minVersion>9.0</minVersion>
+		<maxVersion>*</maxVersion>
+	</targetApplication>
+</extension>

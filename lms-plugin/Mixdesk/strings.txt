@@ -1,0 +1,5 @@
+PLUGIN_MIXDESK
+	EN	Mixdesk
+
+PLUGIN_MIXDESK_DESC
+	EN	A web interface built around MusicIP mixes: pick a seed, preview the mix, prune it. Open it at /mixdesk/ on this server.

@@ -18,6 +18,27 @@ would fail. It also forwards LMS's settings pages (`/settings`, `/plugins`)
 and the files they need (`/html`, `/material`, ...), which the Settings view
 (gear icon) shows in a frame, styled by Material Skin.
 
+## Install on LMS
+
+Mixdesk ships as an LMS plugin that serves the built app at
+`http://<your-lms>:9000/mixdesk/`, so it works from any device without the
+dev server.
+
+```
+npm run package   # build/Mixdesk (the plugin) and build/Mixdesk-<version>.zip
+npm run deploy    # package, then copy to MIXDESK_DEPLOY over ssh
+```
+
+`MIXDESK_DEPLOY` (in `.env.local`) is `host:path` to LMS's
+`<cachedir>/Plugins` folder on the server, e.g.
+`nas:/volume1/docker/lms/cache/Plugins` for a Docker install whose `/config`
+is `/volume1/docker/lms`. The Docker build of LMS loads plugins from there
+and treats them as manually installed. Don't use `InstalledPlugins`: LMS
+uninstalls anything there that it didn't install from a repository.
+
+Restart LMS after the first deploy, and whenever `Plugin.pm` changes. App
+changes are live as soon as a deploy finishes; just reload the page.
+
 ## How it works
 
 - **Running order** (right): what's playing and what's next, with each
