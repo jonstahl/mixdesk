@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type ReactNode, type Ref } from 'react'
+import { createContext, useContext, useEffect, useMemo, useRef, useState, type ReactNode, type Ref } from 'react'
 import * as lms from './lms'
 import type { Album, AlbumSort, Seed, Track } from './lms'
 import { href, type Route } from './router'
@@ -13,6 +13,9 @@ export type LibraryActions = {
 
 type Props = LibraryActions & { route: Route }
 
+// Album tiles appear on most pages; this saves threading the actions through each.
+const Actions = createContext<LibraryActions | null>(null)
+
 export function Library(props: Props) {
   const { route } = props
   // Each page owns its scroll position; start new pages at the top.
@@ -22,7 +25,9 @@ export function Library(props: Props) {
   }, [route])
   return (
     <section className="library" ref={ref} aria-label="Library">
-      <Page {...props} />
+      <Actions.Provider value={props}>
+        <Page {...props} />
+      </Actions.Provider>
     </section>
   )
 }
@@ -104,19 +109,59 @@ function AlbumGrid({ albums, show = 'artist', row, ref }: AlbumGridProps) {
   return (
     <ul ref={ref} className={row ? 'album-grid album-row' : 'album-grid'}>
       {albums.map((a) => (
-        <li key={a.id} className="tile">
-          <a href={href({ page: 'album', id: String(a.id) })}>
-            <Cover className="tile-cover" src={lms.coverUrl(a.artwork_track_id, 300)} name={a.album} />
-            <span className="tile-title">{a.album}</span>
-            <span className="tile-sub">
-              {show !== 'year' && a.artist}
-              {show === 'both' && a.year ? ', ' : ''}
-              {show !== 'artist' && a.year ? a.year : ''}
-            </span>
-          </a>
-        </li>
+        <Tile key={a.id} album={a} show={show} />
       ))}
     </ul>
+  )
+}
+
+/**
+ * A cover with small round Mix, Play and Add buttons over it on hover.
+ * Whether MusicIP can mix the album costs a request, so it's only asked
+ * once the pointer (or focus) arrives.
+ */
+function Tile({ album: a, show }: { album: Album; show: AlbumGridProps['show'] }) {
+  const actions = useContext(Actions)
+  const [mixable, setMixable] = useState(false)
+  const check = () => {
+    if (actions && !mixable) lms.canMix('album', a.id).then(setMixable, () => {})
+  }
+  return (
+    <li className="tile" onPointerEnter={check} onFocus={check}>
+      {actions && <TileActions album={a} actions={actions} mixable={mixable} />}
+      <a href={href({ page: 'album', id: String(a.id) })}>
+        <Cover className="tile-cover" src={lms.coverUrl(a.artwork_track_id, 300)} name={a.album} />
+        <span className="tile-title">{a.album}</span>
+        <span className="tile-sub">
+          {show !== 'year' && a.artist}
+          {show === 'both' && a.year ? ', ' : ''}
+          {show !== 'artist' && a.year ? a.year : ''}
+        </span>
+      </a>
+    </li>
+  )
+}
+
+function TileActions({ album, actions, mixable }: { album: Album; actions: LibraryActions; mixable: boolean }) {
+  return (
+    <div className="tile-actions">
+      {mixable && (
+        <button
+          className="tile-btn"
+          title="Mix from this album"
+          aria-label={`Mix from ${album.album}`}
+          onClick={() => actions.onMix({ kind: 'album', id: album.id, label: album.album })}
+        >
+          <Icon name="mix" size={14} />
+        </button>
+      )}
+      <button className="tile-btn" title="Play" aria-label={`Play ${album.album}`} onClick={() => actions.onAlbum(album, 'load')}>
+        <Icon name="play" size={14} />
+      </button>
+      <button className="tile-btn" title="Add to end" aria-label={`Add ${album.album} to the end`} onClick={() => actions.onAlbum(album, 'add')}>
+        <Icon name="add" size={14} />
+      </button>
+    </div>
   )
 }
 

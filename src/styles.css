@@ -906,6 +906,56 @@ input[type='range'] {
   contain-intrinsic-size: auto 210px;
 }
 
+.tile {
+  position: relative;
+}
+
+/* Sits over the cover, which is the tile's first, square box. */
+.tile-actions {
+  position: absolute;
+  inset: 0 0 auto;
+  aspect-ratio: 1;
+  z-index: 1;
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  gap: 4px;
+  padding: 6px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.12s;
+}
+
+.tile:hover .tile-actions,
+.tile-actions:focus-within {
+  opacity: 1;
+}
+
+.tile-btn {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: rgb(10 12 18 / 0.42);
+  color: rgb(255 255 255 / 0.8);
+  backdrop-filter: blur(4px);
+  pointer-events: auto;
+  transition: background 0.12s, color 0.12s;
+}
+
+.tile-btn:hover {
+  background: rgb(10 12 18 / 0.72);
+  color: #fff;
+}
+
+/* No hover on touch screens; the album page has the same actions. */
+@media (hover: none) {
+  .tile-actions {
+    display: none;
+  }
+}
+
 .tile a {
   display: flex;
   flex-direction: column;
