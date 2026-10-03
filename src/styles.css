@@ -307,6 +307,7 @@ input[type='range'] {
 
 .transport-mix {
   margin-left: auto;
+  white-space: nowrap;
 }
 
 /* ---- buttons -------------------------------------------------------------- */
@@ -1113,6 +1114,52 @@ input[type='range'] {
   font-size: 13px;
   font-weight: 600;
   color: var(--faint);
+}
+
+/* ---- settings ------------------------------------------------------------------ */
+
+.settings {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: 8px var(--gutter) 0;
+}
+
+.settings-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 0 16px;
+}
+
+.segmented a {
+  padding: 5px 12px;
+  border-radius: 6px;
+  color: var(--dim);
+  font-weight: 500;
+}
+
+.segmented a[aria-current='page'] {
+  background: var(--deck-hi);
+  color: var(--paper);
+}
+
+.settings-tabs {
+  margin-left: auto;
+}
+
+.settings-frame {
+  flex: 1;
+  width: 100%;
+  border: 0;
+  border-top: 1px solid var(--line);
+  background: var(--ink);
+}
+
+.topbar-player .icon-btn[aria-current='page'] {
+  background: var(--deck);
+  color: var(--paper);
 }
 
 /* ---- narrow screens ------------------------------------------------------------ */

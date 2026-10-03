@@ -13,6 +13,7 @@ export type Route =
   | { page: 'years' }
   | { page: 'year'; year: string }
   | { page: 'new' }
+  | { page: 'settings'; section: 'server' | 'player' }
 
 export function parse(hash: string): Route {
   const [page, a, b] = hash.replace(/^#\/?/, '').split('/').map(decodeURIComponent)
@@ -32,6 +33,8 @@ export function parse(hash: string): Route {
       return { page, id: a }
     case 'year':
       return { page, year: a }
+    case 'settings':
+      return { page, section: a === 'player' ? 'player' : 'server' }
     default:
       return { page: 'queue' }
   }
@@ -47,6 +50,8 @@ export function href(r: Route): string {
       return `#/album/${e(r.id)}`
     case 'year':
       return `#/year/${e(r.year)}`
+    case 'settings':
+      return `#/settings/${r.section}`
     case 'queue':
       return '#/'
     default:

@@ -6,9 +6,10 @@ import { defineConfig, loadEnv } from 'vite'
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
   const target = env.LMS_HOST || 'http://localhost:9000'
-  const proxy = Object.fromEntries(
-    ['/jsonrpc.js', '/music', '/imageproxy'].map((p) => [p, { target, changeOrigin: true }]),
-  )
+  // /settings and friends are LMS's own settings pages, shown in a frame.
+  // They're styled by Material Skin, whose files live under /material.
+  const paths = ['/jsonrpc.js', '/music', '/imageproxy', '/settings', '/plugins', '/html', '/material', '/skin.css', '/slimserver.css', '/setup.html', '/home.html']
+  const proxy = Object.fromEntries(paths.map((p) => [p, { target, changeOrigin: true }]))
   return {
     plugins: [react()],
     server: { proxy },

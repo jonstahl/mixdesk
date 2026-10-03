@@ -7,7 +7,8 @@ import { RunningOrder } from './RunningOrder'
 import { Draft, type DraftState } from './Draft'
 import { Search } from './Search'
 import { Library } from './Library'
-import { go, href, useRoute } from './router'
+import { Settings } from './Settings'
+import { go, href, useRoute, type Route } from './router'
 import { accentFromCover } from './palette'
 import { Icon } from './ui'
 
@@ -27,7 +28,14 @@ function readSaved(key: string) {
 
 export default function App() {
   const route = useRoute()
+  // Settings closes back to wherever you were before opening it.
+  const [beforeSettings, setBeforeSettings] = useState<Route>({ page: 'queue' })
+  useEffect(() => {
+    if (route.page !== 'settings') setBeforeSettings(route)
+  }, [route])
+  const closeSettings = () => go(beforeSettings)
   const onQueue = route.page === 'queue'
+  const onLibrary = !onQueue && route.page !== 'settings'
   const [players, setPlayers] = useState<lms.Player[]>([])
   const [player, setPlayer] = useState<string | null>(null)
   const { status, tracks, error, refresh, clock } = usePlayer(player)
@@ -268,6 +276,10 @@ export default function App() {
       return
     }
     if (meta || e.altKey) return
+    if (e.key === 'Escape' && route.page === 'settings') {
+      closeSettings()
+      return
+    }
     if (e.key === ' ' && player) {
       e.preventDefault()
       ;(status?.mode === 'play' ? lms.pause(player) : lms.play(player)).then(refresh)
@@ -339,7 +351,7 @@ export default function App() {
             Queue
             {tracks.length > cur + 1 && <span className="views-count">{tracks.length - cur - 1}</span>}
           </a>
-          <a href={href({ page: 'library' })} aria-current={!onQueue ? 'page' : undefined} title="Library (L)">
+          <a href={href({ page: 'library' })} aria-current={onLibrary ? 'page' : undefined} title="Library (L)">
             Library
           </a>
         </nav>
@@ -381,6 +393,15 @@ export default function App() {
               }}
             />
           </label>
+          <a
+            className="icon-btn"
+            href={href(route.page === 'settings' ? beforeSettings : { page: 'settings', section: 'server' })}
+            aria-label="Settings"
+            title="Settings"
+            aria-current={route.page === 'settings' ? 'page' : undefined}
+          >
+            <Icon name="settings" />
+          </a>
         </div>
       </header>
 
@@ -412,6 +433,8 @@ export default function App() {
             onCommit={commitDraft}
             onDiscard={() => setDraft(null)}
           />
+        ) : route.page === 'settings' ? (
+          <Settings section={route.section} player={player} onClose={closeSettings} />
         ) : !onQueue ? (
           <Library route={route} onMix={startDraft} onAlbum={addAlbum} onTrack={addTrack} />
         ) : (

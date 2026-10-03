@@ -14,7 +14,9 @@ npm run dev                  # http://localhost:5180
 
 Vite forwards `/jsonrpc.js` and `/music` to LMS so the browser stays
 same-origin. LMS doesn't send CORS headers, so a direct cross-origin call
-would fail.
+would fail. It also forwards LMS's settings pages (`/settings`, `/plugins`)
+and the files they need (`/html`, `/material`, ...), which the Settings view
+(gear icon) shows in a frame, styled by Material Skin.
 
 ## How it works
 
