@@ -168,9 +168,16 @@ export const isMixable = (t?: Track) => t?.musicmagic_mixable === '1'
  * but the MusicIP plugin only adds "Create MusicIP Mix" to an object's info
  * menu when it's mixable, which is how Material decides too.
  */
+// Info menus hand this player to each plugin's menu hook; without one some
+// (TrackStat) die, and LMS logs an error for every lookup.
+let menuPlayer = ''
+export const setMenuPlayer = (p: string) => {
+  menuPlayer = p
+}
+
 export function canMix(kind: 'album' | 'artist' | 'genre', id: string | number): Promise<boolean> {
   return cached(`canmix ${kind} ${id}`, async () => {
-    const r = await rpc<{ item_loop?: { actions?: { go?: { cmd?: string[] } } }[] }>('', [
+    const r = await rpc<{ item_loop?: { actions?: { go?: { cmd?: string[] } } }[] }>(menuPlayer, [
       `${kind}info`,
       'items',
       0,

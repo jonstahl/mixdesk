@@ -39,6 +39,9 @@ export default function App() {
   const [players, setPlayers] = useState<lms.Player[]>([])
   const [player, setPlayer] = useState<string | null>(null)
   const { status, tracks, error, refresh, patch, clock } = usePlayer(player)
+  useEffect(() => {
+    if (player) lms.setMenuPlayer(player)
+  }, [player])
 
   // Flip the button at once; LMS's answer (or the next poll) confirms it.
   const togglePlay = () => {
