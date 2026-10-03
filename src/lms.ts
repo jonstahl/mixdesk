@@ -5,6 +5,7 @@ export type Track = {
   id: number
   title: string
   artist?: string
+  artist_id?: string
   album?: string
   album_id?: string
   coverid?: string
@@ -31,9 +32,9 @@ export type Status = {
 export type Player = { playerid: string; name: string; connected: number; isplaying: number }
 
 // Tag letters: a artist, c coverid, d duration, e album_id, l album, y year,
-// M MusicIP mixable (t tracknum, i disc for album pages).
+// s artist_id, M MusicIP mixable (t tracknum, i disc for album pages).
 // Album title is silently dropped without `l`.
-export const TRACK_TAGS = 'tags:acdelyM'
+export const TRACK_TAGS = 'tags:acdelysM'
 
 let rpcId = 0
 

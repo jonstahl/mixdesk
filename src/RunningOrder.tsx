@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { coverUrl, isMixable, type Track } from './lms'
-import { Cover, fmtClock, fmtDuration, Icon, type IconName } from './ui'
+import { Cover, fmtDuration, Icon, type IconName } from './ui'
 
 export type RowAction = { icon: IconName; label: string; key?: string; run: () => void; danger?: boolean }
 
@@ -65,7 +65,6 @@ export function TrackRow(props: {
 export function RunningOrder(props: {
   tracks: Track[]
   currentIndex: number
-  remainingNow: number
   selected: number
   leaving: Set<number>
   onSelect: (i: number) => void
@@ -79,14 +78,6 @@ export function RunningOrder(props: {
   const [showPlayed, setShowPlayed] = useState(false)
   const played = tracks.slice(0, currentIndex)
   const upcoming = tracks.slice(currentIndex + 1)
-
-  // Wall-clock start time for each upcoming track: easier to plan around than "+14:32".
-  const starts: Date[] = []
-  let t = Date.now() + props.remainingNow * 1000
-  for (const tr of upcoming) {
-    starts.push(new Date(t))
-    t += (tr.duration ?? 0) * 1000
-  }
 
   const actionsFor = (i: number, tr: Track): RowAction[] => [
     { icon: 'playNext', label: 'Play next', key: 'N', run: () => props.onPlayNext(i) },
@@ -119,12 +110,9 @@ export function RunningOrder(props: {
         </div>
       )}
       <ol className="rows">
-        {showPlayed && played.map((tr, i) => row(tr, i, { muted: true, aside: fmtDuration(tr.duration) }))}
+        {showPlayed && played.map((tr, i) => row(tr, i, { muted: true }))}
         {tracks[currentIndex] && row(tracks[currentIndex], currentIndex, { current: true, aside: 'Now' })}
-        {upcoming.map((tr, k) => {
-          const i = currentIndex + 1 + k
-          return row(tr, i, { aside: <time title={fmtDuration(tr.duration)}>{fmtClock(starts[k])}</time> })
-        })}
+        {upcoming.map((tr, k) => row(tr, currentIndex + 1 + k))}
       </ol>
     </section>
   )

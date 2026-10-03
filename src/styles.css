@@ -245,6 +245,12 @@ input[type='range'] {
   color: var(--dim);
 }
 
+.now-artist a:hover,
+.now-album a:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
 .now-year {
   margin-left: 0.6em;
   color: var(--faint);

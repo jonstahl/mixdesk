@@ -1,5 +1,6 @@
 import { useEffect, useRef, type RefObject } from 'react'
 import { coverUrl, isMixable, type Status, type Track } from './lms'
+import { href } from './router'
 import { Cover, fmtDuration, Icon } from './ui'
 
 type Clock = RefObject<{ at: number; time: number }>
@@ -28,9 +29,11 @@ export function NowPlaying(props: {
       <Cover className="now-cover" src={coverUrl(track.coverid, 600)} name={track.album ?? track.title} full />
       <div className="now-text">
         <h1 className="now-title">{track.title}</h1>
-        <p className="now-artist">{track.artist}</p>
+        <p className="now-artist">
+          {track.artist_id ? <a href={href({ page: 'artist', id: track.artist_id, name: track.artist ?? '' })}>{track.artist}</a> : track.artist}
+        </p>
         <p className="now-album">
-          {track.album}
+          {track.album_id ? <a href={href({ page: 'album', id: track.album_id })}>{track.album}</a> : track.album}
           {track.year && track.year !== '0' ? <span className="now-year">{track.year}</span> : null}
         </p>
       </div>

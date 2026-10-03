@@ -18,8 +18,8 @@ would fail.
 
 ## How it works
 
-- **Running order** (right): what's playing and what's next, with the clock
-  time each track starts. Played tracks are folded away.
+- **Running order** (right): what's playing and what's next, with each
+  track's length. Played tracks are folded away.
 - **Draft mixes**: "Mix from" asks MusicIP (`musicip mix`) for a mix *without
   touching the queue*. Cut what you don't want, then play it, queue it after
   the current track, or add it to the end. "New mix" asks again; MusicIP mixes

@@ -33,9 +33,6 @@ export function fmtDuration(secs?: number) {
   return h ? `${h}:${String(m).padStart(2, '0')}:${r}` : `${m}:${r}`
 }
 
-const clock = new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit' })
-export const fmtClock = (d: Date) => clock.format(d)
-
 /** Artwork, or a lettered tile tinted by album name when LMS has none. */
 export function Cover({ src, name, className, full }: { src: string; name?: string; className: string; full?: boolean }) {
   if (src) return <img className={className} src={src} alt="" loading="lazy" />

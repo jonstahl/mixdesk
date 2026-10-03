@@ -330,7 +330,6 @@ export default function App() {
   // --- render ------------------------------------------------------------
 
   const volTimer = useRef(0)
-  const remainingNow = Math.max(0, (status?.duration ?? current?.duration ?? 0) - (status?.time ?? 0))
 
   return (
     <div className="desk">
@@ -419,7 +418,6 @@ export default function App() {
           <RunningOrder
             tracks={tracks}
             currentIndex={cur}
-            remainingNow={remainingNow}
             selected={cursorOn ? sel : -1}
             leaving={leaving}
             onSelect={(i) => {
