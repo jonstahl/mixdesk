@@ -14,6 +14,10 @@
   --font: 'Bricolage Grotesque', ui-sans-serif, system-ui, sans-serif;
   --row-h: 56px;
   --gutter: clamp(16px, 2.4vw, 32px);
+  /* The now-playing column is exactly as wide as the cover plus its gutters,
+     so there's never dead space beside it. Height-bound so the transport
+     stays on screen; width-bound so the queue keeps most of the room. */
+  --cover: clamp(260px, min(44vh, 34vw), 460px);
 
   color-scheme: dark;
 }
@@ -164,7 +168,7 @@ input[type='range'] {
 .stage {
   flex: 1;
   display: grid;
-  grid-template-columns: minmax(320px, 36%) 1fr;
+  grid-template-columns: calc(var(--cover) + 2 * var(--gutter)) minmax(0, 1fr);
   min-height: 0;
 }
 
@@ -190,7 +194,7 @@ input[type='range'] {
 }
 
 .now-cover {
-  width: min(100%, 460px, 44vh);
+  width: var(--cover);
   aspect-ratio: 1;
   object-fit: cover;
   border-radius: 6px;
