@@ -114,6 +114,14 @@ export const addTracks = (p: string, ids: number[], mode: AddMode) =>
 export const addAlbum = (p: string, albumId: string | number, mode: AddMode) =>
   rpc(p, ['playlistcontrol', `cmd:${mode}`, `album_id:${albumId}`])
 
+/** Play a track straight away without disturbing the rest of the queue. */
+export async function playTrackNow(p: string, trackId: number) {
+  await addTracks(p, [trackId], 'insert')
+  const { currentIndex, trackCount } = await getStatus(p)
+  // An empty queue starts playing the inserted track by itself.
+  if (trackCount > 1) await jumpTo(p, currentIndex + 1)
+}
+
 /** Put back a queue saved before a bulk change: same tracks, same track playing, same position. */
 export async function restoreQueue(p: string, ids: number[], index: number, time: number) {
   await addTracks(p, ids, 'load')

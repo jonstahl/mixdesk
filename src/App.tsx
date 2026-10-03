@@ -37,8 +37,19 @@ export default function App() {
   const [draftSel, setDraftSel] = useState(0)
   const [cursorOn, setCursorOn] = useState(false)
   const [variety, setVarietyState] = useState(6)
-  const [searching, setSearching] = useState(false)
+  const [searching, setSearchingState] = useState(false)
   const [initialTerm, setInitialTerm] = useState('')
+  // Updated synchronously: keys typed before the search box renders and takes
+  // focus must go into the search term, not fire queue shortcuts.
+  const searchingRef = useRef(false)
+  const setSearching = (on: boolean) => {
+    searchingRef.current = on
+    setSearchingState(on)
+  }
+  const openSearch = (initial = '') => {
+    setInitialTerm(initial)
+    setSearching(true)
+  }
   const [toast, setToast] = useState<Toast | null>(null)
   const [volume, setVolumeState] = useState<number | null>(null)
 
@@ -207,11 +218,12 @@ export default function App() {
       return { ...d, tracks: next }
     })
 
-  const addTrack = (t: Track, mode: 'insert' | 'add') => {
+  const addTrack = (t: Track, mode: 'play' | 'insert' | 'add') => {
     if (!player) return
     setSearching(false)
-    enqueue(() => lms.addTracks(player, [t.id], mode))
-    setToast({ text: mode === 'insert' ? `“${t.title}” plays next` : `Added “${t.title}” to the end` })
+    enqueue(() => (mode === 'play' ? lms.playTrackNow(player, t.id) : lms.addTracks(player, [t.id], mode)))
+    const text = mode === 'play' ? `Playing “${t.title}”` : mode === 'insert' ? `“${t.title}” plays next` : `Added “${t.title}” to the end`
+    setToast({ text })
   }
 
   const addAlbum = (a: lms.Album, mode: lms.AddMode) => {
@@ -233,7 +245,12 @@ export default function App() {
   const keys = useRef<(e: KeyboardEvent) => void>(() => {})
   keys.current = (e: KeyboardEvent) => {
     const el = e.target as HTMLElement
-    if (searching || el.closest('input, select, textarea')) return
+    if (el.closest('input, select, textarea')) return
+    if (searchingRef.current) {
+      if (e.key.length === 1 && !e.metaKey && !e.ctrlKey) setInitialTerm((t) => t + e.key)
+      if (e.key !== 'Escape') e.preventDefault()
+      return
+    }
     const meta = e.metaKey || e.ctrlKey
     if (draft && meta && e.key === 'Enter') {
       e.preventDefault()
@@ -242,8 +259,7 @@ export default function App() {
     }
     if ((meta && e.key === 'k') || e.key === '/') {
       e.preventDefault()
-      setInitialTerm('')
-      setSearching(true)
+      openSearch()
       return
     }
     if (meta && e.key === 'z') {
@@ -296,8 +312,7 @@ export default function App() {
   const typeToSearch = (e: KeyboardEvent) => {
     if (e.key.length !== 1 || !/\S/.test(e.key)) return
     e.preventDefault()
-    setInitialTerm(e.key)
-    setSearching(true)
+    openSearch(e.key)
   }
   useEffect(() => {
     const h = (e: KeyboardEvent) => keys.current(e)
@@ -325,12 +340,11 @@ export default function App() {
         <button
           className="search-trigger"
           onClick={() => {
-            setInitialTerm('')
-            setSearching(true)
+            openSearch()
           }}
         >
           <Icon name="search" size={18} />
-          <span>Find a track to mix from</span>
+          <span>Search</span>
           <kbd>/</kbd>
         </button>
         <div className="topbar-player">
@@ -419,6 +433,10 @@ export default function App() {
           initialTerm={initialTerm}
           onClose={() => setSearching(false)}
           onMix={startDraft}
+          onOpen={(r) => {
+            setSearching(false)
+            go(r)
+          }}
           onTrack={addTrack}
           onAlbum={addAlbum}
         />

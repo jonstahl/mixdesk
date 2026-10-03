@@ -50,5 +50,15 @@ would fail.
 Any other letter opens search with that letter typed in, so you can type
 without opening search first.
 
-In search: `Enter` drafts a mix, `Shift+Enter` plays next, `Alt+Enter` adds
-to the end.
+In search, `Enter` does the obvious thing for each kind of result and the
+modifiers mean the same everywhere:
+
+| | Enter | ⌘Enter | Shift+Enter | Alt+Enter |
+| --- | --- | --- | --- | --- |
+| Track | Mix from it | Play now | Play next | Add to end |
+| Album | Open | Play (replaces queue, undoable) | Play next | Add to end |
+| Artist | Open | Mix from artist | | |
+
+The highlighted result also shows these as buttons. Mix options only appear
+when MusicIP has analysed the track, album or artist. Tracks are listed
+first unless the query exactly names an artist or album and no track.

@@ -616,7 +616,22 @@ input[type='range'] {
 }
 
 .hit:not(:has(.row-cover)) {
-  grid-template-columns: minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.hit-actions {
+  display: flex;
+  gap: 2px;
+  margin-right: -6px;
+}
+
+.hit-actions .text-btn {
+  padding: 4px 8px;
+  font-size: 13px;
+}
+
+.hit-actions .text-btn:first-child {
+  color: var(--paper);
 }
 
 .hit.is-active {
