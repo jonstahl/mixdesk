@@ -2,7 +2,7 @@ import type { Seed, Track } from './lms'
 import { TrackRow } from './RunningOrder'
 import { fmtDuration, Icon } from './ui'
 
-export type DraftState = { seed: Seed; tracks: Track[]; loading: boolean; error?: string }
+export type DraftState = { seed: Seed; tracks: Track[]; loading: boolean; error?: string; empty?: boolean }
 
 export function Draft(props: {
   draft: DraftState
@@ -23,7 +23,11 @@ export function Draft(props: {
         <div>
           <h2 className="draft-title">Mix from {draft.seed.label}</h2>
           <p className="draft-meta">
-            {draft.loading ? 'Asking MusicIP…' : `${draft.tracks.length} tracks, ${fmtDuration(total)}. Cut what you don't want, then play it.`}
+            {draft.loading
+              ? 'Asking MusicIP…'
+              : draft.tracks.length
+                ? `${draft.tracks.length} tracks, ${fmtDuration(total)}. Cut what you don't want, then play it.`
+                : 'No mix'}
           </p>
         </div>
         <div className="draft-tune">
@@ -38,7 +42,12 @@ export function Draft(props: {
         </div>
       </header>
       {draft.error ? (
-        <p className="draft-error">MusicIP didn't return a mix: {draft.error}. Check that the MusicIP service is running on the NAS.</p>
+        <p className="draft-error">MusicIP didn't answer: {draft.error}. Check that the MusicIP service is running on the NAS.</p>
+      ) : draft.empty ? (
+        <p className="draft-error">
+          MusicIP has no mix for {draft.seed.label}. Usually that means it hasn't analysed these tracks yet; recently added
+          music needs a MusicIP rescan first. Try mixing from something older.
+        </p>
       ) : (
         <ol className={'rows' + (draft.loading ? ' is-loading' : '')}>
           {draft.tracks.map((t, i) => (

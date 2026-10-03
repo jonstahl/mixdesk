@@ -79,6 +79,11 @@ img {
   display: block;
 }
 
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
 /* ---- shell -------------------------------------------------------------- */
 
 .desk {
@@ -675,6 +680,408 @@ input[type='range'] {
   color: color-mix(in oklab, var(--ink) 60%, var(--paper));
 }
 
+/* ---- view switch ----------------------------------------------------------- */
+
+.views {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.views a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  color: var(--dim);
+  font-weight: 600;
+  font-variation-settings: 'wdth' 85;
+}
+
+.views a:hover {
+  color: var(--paper);
+}
+
+.views a[aria-current='page'] {
+  color: var(--paper);
+  background: var(--deck);
+}
+
+.views-count {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--dim);
+  font-variant-numeric: tabular-nums;
+}
+
+.topbar .search-trigger {
+  margin-right: auto;
+}
+
+/* ---- library ------------------------------------------------------------------ */
+
+.library {
+  min-height: 0;
+  overflow-y: auto;
+  padding: 8px var(--gutter) 48px;
+}
+
+.page-head {
+  padding: 14px 0 20px;
+}
+
+.page-up {
+  display: inline-block;
+  margin-bottom: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--dim);
+}
+
+.page-up:hover {
+  color: var(--paper);
+}
+
+.page-title {
+  margin: 0;
+  font-size: clamp(1.9rem, 2.8vw, 2.8rem);
+  line-height: 1;
+  font-weight: 700;
+  font-variation-settings: 'opsz' 96, 'wdth' 75;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+
+.page-meta {
+  margin: 8px 0 0;
+  color: var(--dim);
+}
+
+.page-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.page-note {
+  color: var(--dim);
+}
+
+.page-note.is-error {
+  color: var(--coral);
+}
+
+/* Home: the index reads as type, not as a grid of icons. */
+.lib-index {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0 24px;
+  padding: 20px 0 8px;
+}
+
+.lib-index a {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+
+.lib-index-label {
+  font-size: clamp(1.6rem, 2.4vw, 2.4rem);
+  line-height: 1;
+  font-weight: 700;
+  font-variation-settings: 'opsz' 96, 'wdth' 75;
+}
+
+.lib-index-count {
+  font-size: 13px;
+  color: var(--dim);
+  font-variant-numeric: tabular-nums;
+}
+
+.lib-index a:hover .lib-index-label {
+  color: var(--accent);
+}
+
+.shelf {
+  margin-top: 36px;
+}
+
+.shelf-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.shelf-head h2 {
+  margin: 0;
+  font-size: 1.3rem;
+  font-weight: 650;
+  font-variation-settings: 'opsz' 24, 'wdth' 85;
+}
+
+.shelf-head .text-btn {
+  margin-right: -10px;
+}
+
+.album-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));
+  gap: 22px 18px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tile {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 210px;
+}
+
+.tile a {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.tile-cover {
+  width: 100%;
+  aspect-ratio: 1;
+  margin-bottom: 8px;
+  border-radius: 4px;
+  object-fit: cover;
+  background: var(--deck);
+}
+
+.tile-cover.cover-blank {
+  font-size: 2.4rem;
+}
+
+.tile-title {
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.tile-sub {
+  font-size: 13px;
+  color: var(--dim);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tile a:hover .tile-title {
+  color: var(--accent);
+}
+
+/* Artist and genre indexes, set like the index at the back of a book. */
+.index-tools {
+  position: sticky;
+  top: -8px;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 20px;
+  padding: 10px 0 14px;
+  background: var(--ink);
+}
+
+.index-filter {
+  width: min(320px, 100%);
+  padding: 7px 12px;
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  outline: none;
+}
+
+.index-filter:focus {
+  border-color: var(--accent);
+}
+
+.index-letters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+}
+
+.index-letters a {
+  min-width: 22px;
+  padding: 2px 4px;
+  border-radius: 4px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--dim);
+}
+
+.index-letters a:hover {
+  background: var(--deck-hi);
+  color: var(--paper);
+}
+
+.book-index {
+  columns: 15rem;
+  column-gap: 36px;
+}
+
+.index-group {
+  scroll-margin-top: 64px;
+}
+
+.index-letter {
+  margin: 18px 0 6px;
+  font-size: 1.7rem;
+  line-height: 1;
+  font-weight: 700;
+  font-variation-settings: 'opsz' 96, 'wdth' 75;
+  color: var(--accent);
+  break-after: avoid;
+}
+
+.index-group:first-child .index-letter {
+  margin-top: 0;
+}
+
+.index-group ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.index-group li {
+  padding: 3px 0;
+  break-inside: avoid;
+}
+
+.index-group a:hover {
+  color: var(--accent);
+}
+
+.decade {
+  display: grid;
+  grid-template-columns: 7rem 1fr;
+  align-items: baseline;
+  gap: 16px;
+  padding: 14px 0;
+  border-top: 1px solid var(--line);
+}
+
+.decade-label {
+  margin: 0;
+  font-size: 1.7rem;
+  line-height: 1;
+  font-weight: 700;
+  font-variation-settings: 'opsz' 96, 'wdth' 75;
+}
+
+.decade-years {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 18px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-variant-numeric: tabular-nums;
+}
+
+.decade-years a {
+  color: var(--dim);
+}
+
+.decade-years a:hover {
+  color: var(--accent);
+}
+
+.segmented {
+  display: inline-flex;
+  padding: 2px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.segmented button {
+  padding: 5px 12px;
+  border-radius: 6px;
+  color: var(--dim);
+  font-weight: 500;
+}
+
+.segmented button[aria-pressed='true'] {
+  background: var(--deck-hi);
+  color: var(--paper);
+}
+
+.album-head {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+  align-items: end;
+  gap: 28px;
+  padding: 18px 0 24px;
+}
+
+.album-cover {
+  width: 220px;
+  aspect-ratio: 1;
+  border-radius: 6px;
+  object-fit: cover;
+  background: var(--deck);
+}
+
+.album-cover.cover-blank {
+  place-items: end start;
+  padding: 10%;
+  font-size: 1.4rem;
+  font-variation-settings: 'opsz' 96, 'wdth' 75;
+}
+
+.album-by {
+  margin: 10px 0 0;
+  font-size: 1.15rem;
+  font-weight: 600;
+  font-variation-settings: 'opsz' 24, 'wdth' 85;
+}
+
+.album-by a:first-child {
+  color: var(--accent);
+}
+
+.album-by a:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.album-year {
+  margin-left: 0.7em;
+  color: var(--dim);
+  font-weight: 500;
+}
+
+.row-num {
+  text-align: right;
+  padding-right: 4px;
+  color: var(--faint);
+  font-variant-numeric: tabular-nums;
+}
+
+.disc-heading {
+  padding: 18px 0 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--faint);
+}
+
 /* ---- narrow screens ------------------------------------------------------------ */
 
 @media (max-width: 860px) {
@@ -711,6 +1118,29 @@ input[type='range'] {
   .search-trigger kbd,
   .volume input {
     display: none;
+  }
+
+  .lib-index {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px 20px;
+  }
+
+  .album-grid {
+    grid-template-columns: repeat(auto-fill, minmax(112px, 1fr));
+  }
+
+  .album-head {
+    grid-template-columns: 112px minmax(0, 1fr);
+    gap: 16px;
+  }
+
+  .album-cover {
+    width: 112px;
+  }
+
+  .decade {
+    grid-template-columns: 1fr;
+    gap: 8px;
   }
 
   .search-trigger {

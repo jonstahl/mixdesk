@@ -10,6 +10,8 @@ export type Track = {
   coverid?: string
   duration?: number
   year?: string
+  tracknum?: string
+  disc?: string
   'playlist index'?: number
 }
 
@@ -27,7 +29,7 @@ export type Status = {
 
 export type Player = { playerid: string; name: string; connected: number; isplaying: number }
 
-// Tag letters: a artist, c coverid, d duration, e album_id, l album, y year.
+// Tag letters: a artist, c coverid, d duration, e album_id, l album, y year (t tracknum, i disc for album pages).
 // Album title is silently dropped without `l`.
 export const TRACK_TAGS = 'tags:acdely'
 
@@ -123,13 +125,11 @@ export async function clearPlayed(p: string, currentIndex: number) {
 
 // --- MusicIP -----------------------------------------------------------------
 
-export type Seed =
-  | { kind: 'track'; id: number; label: string }
-  | { kind: 'album'; id: string | number; label: string }
-  | { kind: 'artist'; id: string | number; label: string }
+// Year seeds aren't offered: MusicIP returns nothing for them on this server.
+export type Seed = { kind: 'track' | 'album' | 'artist' | 'genre'; id: string | number; label: string }
 
-const seedParam = (s: Seed) =>
-  s.kind === 'track' ? `song_id:${s.id}` : s.kind === 'album' ? `album_id:${s.id}` : `artist_id:${s.id}`
+const SEED_PARAM: Record<Seed['kind'], string> = { track: 'song_id', album: 'album_id', artist: 'artist_id', genre: 'genre_id' }
+const seedParam = (s: Seed) => `${SEED_PARAM[s.kind]}:${s.id}`
 
 /** Ask MusicIP for a mix without touching the queue. */
 export async function previewMix(p: string, seed: Seed): Promise<Track[]> {
@@ -146,8 +146,17 @@ export const setVariety = (v: number) => rpc('', ['pref', 'plugin.musicip:mix_va
 
 // --- search ------------------------------------------------------------------
 
-export type Album = { id: number; album: string; artist?: string; artwork_track_id?: string; year?: number }
-export type Artist = { id: number; artist: string }
+export type Album = {
+  id: number
+  album: string
+  artist?: string
+  artist_id?: number
+  artwork_track_id?: string
+  year?: number
+  textkey?: string
+}
+export type Artist = { id: number; artist: string; textkey?: string }
+export type Genre = { id: number; genre: string; textkey?: string }
 
 export async function search(term: string) {
   const [t, al, ar] = await Promise.all([
@@ -156,4 +165,70 @@ export async function search(term: string) {
     rpc<{ artists_loop?: Artist[] }>('', ['artists', 0, 8, `search:${term}`]),
   ])
   return { tracks: t.titles_loop ?? [], albums: al.albums_loop ?? [], artists: ar.artists_loop ?? [] }
+}
+
+// --- library -------------------------------------------------------------------
+
+// Library data barely changes during a session, so list fetches are memoised.
+// Random albums opt out so "Shuffle" gets a fresh set.
+const memo = new Map<string, Promise<unknown>>()
+function cached<T>(key: string, load: () => Promise<T>): Promise<T> {
+  if (!memo.has(key)) memo.set(key, load().catch((e) => (memo.delete(key), Promise.reject(e))))
+  return memo.get(key) as Promise<T>
+}
+
+const ALBUM_TAGS = 'tags:alyjSs'
+const ALL = 10000
+
+// LMS 9.1 answers sort:yearartist with an error, so year order is yearalbum.
+export type AlbumSort = 'artflow' | 'album' | 'yearalbum' | 'new' | 'random'
+
+export function getAlbums(filters: string[] = [], sort: AlbumSort = 'artflow', count = ALL): Promise<Album[]> {
+  const cmd = ['albums', 0, count, `sort:${sort}`, ALBUM_TAGS, ...filters]
+  const load = () => rpc<{ albums_loop?: Album[] }>('', cmd).then((r) => r.albums_loop ?? [])
+  return sort === 'random' ? load() : cached(cmd.join(' '), load)
+}
+
+export function getAlbum(id: string | number): Promise<Album | undefined> {
+  return getAlbums([`album_id:${id}`], 'album', 1).then((a) => a[0])
+}
+
+export function getAlbumTracks(id: string | number): Promise<Track[]> {
+  return cached(`tracks ${id}`, () =>
+    rpc<{ titles_loop?: Track[] }>('', ['titles', 0, 500, `album_id:${id}`, 'sort:tracknum', TRACK_TAGS + 'ti']).then(
+      (r) => r.titles_loop ?? [],
+    ),
+  )
+}
+
+export function getAlbumArtists(): Promise<Artist[]> {
+  return cached('album artists', () =>
+    rpc<{ artists_loop?: Artist[] }>('', ['artists', 0, ALL, 'role_id:ALBUMARTIST', 'tags:s']).then((r) => r.artists_loop ?? []),
+  )
+}
+
+export function getGenres(): Promise<Genre[]> {
+  return cached('genres', () =>
+    rpc<{ genres_loop?: Genre[] }>('', ['genres', 0, ALL, 'tags:s']).then((r) => r.genres_loop ?? []),
+  )
+}
+
+export function getYears(): Promise<number[]> {
+  return cached('years', () =>
+    rpc<{ years_loop?: { year: number }[] }>('', ['years', 0, ALL]).then((r) =>
+      (r.years_loop ?? []).map((y) => Number(y.year)).filter((y) => y > 0),
+    ),
+  )
+}
+
+export type LibraryTotals = { albums: number; artists: number; songs: number }
+
+export function getTotals(): Promise<LibraryTotals> {
+  return cached('totals', () =>
+    rpc<Record<string, number>>('', ['serverstatus', 0, 0]).then((r) => ({
+      albums: Number(r['info total albums'] ?? 0),
+      artists: Number(r['info total artists'] ?? 0),
+      songs: Number(r['info total songs'] ?? 0),
+    })),
+  )
 }

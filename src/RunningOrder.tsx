@@ -11,6 +11,10 @@ export function TrackRow(props: {
   muted?: boolean
   leaving?: boolean
   aside?: ReactNode
+  /** Replaces the cover, e.g. a track number on an album page. */
+  lead?: ReactNode
+  /** Replaces the artist/album line. */
+  sub?: ReactNode
   actions: RowAction[]
   onSelect?: () => void
   onActivate?: () => void
@@ -25,13 +29,17 @@ export function TrackRow(props: {
     .join(' ')
   return (
     <li ref={ref} className={cls} onClick={props.onSelect} onDoubleClick={props.onActivate} aria-current={props.current || undefined}>
-      <Cover className="row-cover" src={coverUrl(track.coverid, 96)} name={track.album} />
+      {props.lead ?? <Cover className="row-cover" src={coverUrl(track.coverid, 96)} name={track.album} />}
       <div className="row-main">
         <span className="row-title">{track.title}</span>
-        <span className="row-sub">
-          <span className="row-artist">{track.artist}</span>
-          <span className="row-album">{track.album}</span>
-        </span>
+        {'sub' in props ? (
+          props.sub && <span className="row-sub">{props.sub}</span>
+        ) : (
+          <span className="row-sub">
+            <span className="row-artist">{track.artist}</span>
+            <span className="row-album">{track.album}</span>
+          </span>
+        )}
       </div>
       <div className="row-actions">
         {props.actions.map((a) => (

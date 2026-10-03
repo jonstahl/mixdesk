@@ -22,7 +22,9 @@ export function Search(props: {
   const input = useRef<HTMLInputElement>(null)
   const list = useRef<HTMLDivElement>(null)
 
-  useEffect(() => input.current?.focus(), [])
+  useEffect(() => {
+    input.current?.focus()
+  }, [])
 
   useEffect(() => {
     const q = term.trim()

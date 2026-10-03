@@ -6,6 +6,8 @@ import { NowPlaying } from './NowPlaying'
 import { RunningOrder } from './RunningOrder'
 import { Draft, type DraftState } from './Draft'
 import { Search } from './Search'
+import { Library } from './Library'
+import { go, href, useRoute } from './router'
 import { accentFromCover } from './palette'
 import { Icon } from './ui'
 
@@ -24,6 +26,8 @@ function readSaved(key: string) {
 }
 
 export default function App() {
+  const route = useRoute()
+  const onQueue = route.page === 'queue'
   const [players, setPlayers] = useState<lms.Player[]>([])
   const [player, setPlayer] = useState<string | null>(null)
   const { status, tracks, error, refresh, clock } = usePlayer(player)
@@ -159,7 +163,7 @@ export default function App() {
       setDraft((d) => ({ seed, tracks: d && d.seed === seed ? d.tracks : [], loading: true }))
       try {
         const mix = await lms.previewMix(player, seed)
-        setDraft({ seed, tracks: mix, loading: false, error: mix.length ? undefined : 'it came back empty' })
+        setDraft({ seed, tracks: mix, loading: false, empty: !mix.length })
       } catch (e) {
         setDraft({ seed, tracks: [], loading: false, error: e instanceof Error ? e.message : String(e) })
       }
@@ -186,6 +190,7 @@ export default function App() {
     enqueue(() => lms.addTracks(player, ids, mode))
     setDraft(null)
     setSelected(null)
+    go({ page: 'queue' })
     const verb = mode === 'load' ? 'Playing' : mode === 'insert' ? 'Queued after this track:' : 'Added to the end:'
     setToast({ text: `${verb} mix from ${draft.seed.label}`, undo: restore })
   }
@@ -197,6 +202,22 @@ export default function App() {
       setDraftSel((s) => Math.max(0, Math.min(s, next.length - 1)))
       return { ...d, tracks: next }
     })
+
+  const addTrack = (t: Track, mode: 'insert' | 'add') => {
+    if (!player) return
+    setSearching(false)
+    enqueue(() => lms.addTracks(player, [t.id], mode))
+    setToast({ text: mode === 'insert' ? `“${t.title}” plays next` : `Added “${t.title}” to the end` })
+  }
+
+  const addAlbum = (a: lms.Album, mode: lms.AddMode) => {
+    if (!player) return
+    setSearching(false)
+    const restore = mode === 'load' ? snapshot() : undefined
+    enqueue(() => lms.addAlbum(player, a.id, mode))
+    const text = mode === 'load' ? `Playing ${a.album}` : mode === 'insert' ? `${a.album} plays next` : `Added ${a.album} to the end`
+    setToast({ text, undo: restore })
+  }
 
   const undo = () => {
     toast?.undo?.()
@@ -253,7 +274,8 @@ export default function App() {
       e.preventDefault()
       return
     }
-    if (!tracks.length) return
+    // Queue shortcuts only apply while the queue is on screen.
+    if (!onQueue || !tracks.length) return typeToSearch(e)
     if (down || up) {
       if (!reveal) setSelected(down ? Math.min(sel + 1, tracks.length - 1) : Math.max(sel - 1, 0))
       showCursor()
@@ -287,6 +309,15 @@ export default function App() {
   return (
     <div className="desk">
       <header className="topbar">
+        <nav className="views" aria-label="View">
+          <a href={href({ page: 'queue' })} aria-current={onQueue ? 'page' : undefined}>
+            Queue
+            {tracks.length > cur + 1 && <span className="views-count">{tracks.length - cur - 1}</span>}
+          </a>
+          <a href={href({ page: 'library' })} aria-current={!onQueue ? 'page' : undefined}>
+            Library
+          </a>
+        </nav>
         <button
           className="search-trigger"
           onClick={() => {
@@ -357,6 +388,8 @@ export default function App() {
             onCommit={commitDraft}
             onDiscard={() => setDraft(null)}
           />
+        ) : !onQueue ? (
+          <Library route={route} onMix={startDraft} onAlbum={addAlbum} onTrack={addTrack} />
         ) : (
           <RunningOrder
             tracks={tracks}
@@ -382,18 +415,8 @@ export default function App() {
           initialTerm={initialTerm}
           onClose={() => setSearching(false)}
           onMix={startDraft}
-          onTrack={(t, mode) => {
-            if (!player) return
-            setSearching(false)
-            enqueue(() => lms.addTracks(player, [t.id], mode))
-            setToast({ text: mode === 'insert' ? `“${t.title}” plays next` : `Added “${t.title}” to the end` })
-          }}
-          onAlbum={(a, mode) => {
-            if (!player) return
-            setSearching(false)
-            enqueue(() => lms.addAlbum(player, a.id, mode))
-            setToast({ text: mode === 'insert' ? `${a.album} plays next` : `Added ${a.album} to the end` })
-          }}
+          onTrack={addTrack}
+          onAlbum={addAlbum}
         />
       )}
 
