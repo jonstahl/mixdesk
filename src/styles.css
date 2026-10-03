@@ -82,8 +82,8 @@ img {
 /* ---- shell -------------------------------------------------------------- */
 
 .desk {
-  display: grid;
-  grid-template-rows: auto auto 1fr;
+  display: flex;
+  flex-direction: column;
   height: 100%;
 }
 
@@ -157,6 +157,7 @@ input[type='range'] {
 }
 
 .stage {
+  flex: 1;
   display: grid;
   grid-template-columns: minmax(320px, 36%) 1fr;
   min-height: 0;
@@ -475,26 +476,6 @@ input[type='range'] {
     transform: translateX(24px);
     height: 0;
   }
-}
-
-.horizon {
-  margin-top: 18px;
-  padding-top: 16px;
-  border-top: 1px dashed color-mix(in oklab, var(--accent) 55%, var(--line));
-  max-width: 62ch;
-}
-
-.horizon-title {
-  margin: 0;
-  font-weight: 650;
-  font-variation-settings: 'wdth' 85;
-  color: var(--accent);
-}
-
-.horizon-note {
-  margin: 4px 0 0;
-  font-size: 13px;
-  color: var(--dim);
 }
 
 /* ---- draft ------------------------------------------------------------------ */

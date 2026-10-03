@@ -11,6 +11,7 @@ import { Icon } from './ui'
 
 const PLAYER_KEY = 'mixdesk.player'
 const LEAVE_MS = 160
+const CURSOR_IDLE_MS = 4000
 
 type Toast = { text: string; undo?: () => void }
 
@@ -30,8 +31,8 @@ export default function App() {
   const [leaving, setLeaving] = useState<Set<number>>(new Set())
   const [draft, setDraft] = useState<DraftState | null>(null)
   const [draftSel, setDraftSel] = useState(0)
+  const [cursorOn, setCursorOn] = useState(false)
   const [variety, setVarietyState] = useState(6)
-  const [autoMix, setAutoMix] = useState(false)
   const [searching, setSearching] = useState(false)
   const [initialTerm, setInitialTerm] = useState('')
   const [toast, setToast] = useState<Toast | null>(null)
@@ -67,9 +68,6 @@ export default function App() {
     } catch {
       /* private window: fine to forget */
     }
-    lms
-      .rpc<{ _p2?: string | null }>(player, ['playerpref', 'plugin.dontstopthemusic:provider', '?'])
-      .then((r) => setAutoMix(!!r._p2))
   }, [player])
 
   useEffect(() => {
@@ -79,6 +77,19 @@ export default function App() {
   const cur = status?.currentIndex ?? 0
   const current = tracks[cur]
   const sel = selected ?? Math.min(cur + 1, tracks.length - 1)
+
+  // The keyboard cursor stays hidden until it's used, then fades out and
+  // falls back to the next track. Hidden or not, x/n/m act on `sel`.
+  const cursorTimer = useRef(0)
+  const showCursor = () => {
+    setCursorOn(true)
+    clearTimeout(cursorTimer.current)
+    cursorTimer.current = window.setTimeout(() => {
+      setCursorOn(false)
+      setSelected(null)
+      setDraftSel(0)
+    }, CURSOR_IDLE_MS)
+  }
 
   // The current cover sets the accent for the whole desk.
   const coverKey = current ? lms.coverUrl(current.coverid, 600) : ''
@@ -221,21 +232,32 @@ export default function App() {
       ;(status?.mode === 'play' ? lms.pause(player) : lms.play(player)).then(refresh)
       return
     }
+    const down = e.key === 'ArrowDown' || e.key === 'j'
+    const up = e.key === 'ArrowUp' || e.key === 'k'
+    const cutKey = e.key === 'x' || e.key === 'Backspace' || e.key === 'Delete'
+    // The first move only reveals the cursor, so you see where it is before it goes anywhere.
+    const reveal = (down || up) && !cursorOn
     if (draft) {
       const n = draft.tracks.length
-      if (e.key === 'ArrowDown' || e.key === 'j') setDraftSel((s) => Math.min(s + 1, n - 1))
-      else if (e.key === 'ArrowUp' || e.key === 'k') setDraftSel((s) => Math.max(s - 1, 0))
-      else if (e.key === 'x' || e.key === 'Backspace' || e.key === 'Delete') cutDraft(draftSel)
-      else if (e.key === 'r') startDraft(draft.seed)
+      // In a draft a hidden cursor sits on the seed, so cutting needs it visible first.
+      if (down || up || cutKey) {
+        if (!reveal && cursorOn) {
+          if (down) setDraftSel((s) => Math.min(s + 1, n - 1))
+          else if (up) setDraftSel((s) => Math.max(s - 1, 0))
+          else cutDraft(draftSel)
+        }
+        showCursor()
+      } else if (e.key === 'r') startDraft(draft.seed)
       else if (e.key === 'Escape') setDraft(null)
       else return typeToSearch(e)
       e.preventDefault()
       return
     }
     if (!tracks.length) return
-    if (e.key === 'ArrowDown' || e.key === 'j') setSelected(Math.min(sel + 1, tracks.length - 1))
-    else if (e.key === 'ArrowUp' || e.key === 'k') setSelected(Math.max(sel - 1, 0))
-    else if (e.key === 'x' || e.key === 'Backspace' || e.key === 'Delete') cut(sel)
+    if (down || up) {
+      if (!reveal) setSelected(down ? Math.min(sel + 1, tracks.length - 1) : Math.max(sel - 1, 0))
+      showCursor()
+    } else if (cutKey) cut(sel)
     else if (e.key === 'n') playNext(sel)
     else if (e.key === 'm' && tracks[sel]) mixFrom(tracks[sel])
     else if (e.key === 'Enter' && player) enqueue(() => lms.jumpTo(player, sel))
@@ -324,8 +346,11 @@ export default function App() {
           <Draft
             draft={draft}
             variety={variety}
-            selected={draftSel}
-            onSelect={setDraftSel}
+            selected={cursorOn ? draftSel : -1}
+            onSelect={(i) => {
+              setDraftSel(i)
+              showCursor()
+            }}
             onCut={cutDraft}
             onReroll={() => startDraft(draft.seed)}
             onVariety={changeVariety}
@@ -337,10 +362,12 @@ export default function App() {
             tracks={tracks}
             currentIndex={cur}
             remainingNow={remainingNow}
-            selected={sel}
+            selected={cursorOn ? sel : -1}
             leaving={leaving}
-            autoMix={autoMix}
-            onSelect={setSelected}
+            onSelect={(i) => {
+              setSelected(i)
+              showCursor()
+            }}
             onJump={(i) => player && enqueue(() => lms.jumpTo(player, i))}
             onCut={cut}
             onPlayNext={playNext}

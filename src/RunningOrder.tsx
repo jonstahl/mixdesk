@@ -60,7 +60,6 @@ export function RunningOrder(props: {
   remainingNow: number
   selected: number
   leaving: Set<number>
-  autoMix: boolean
   onSelect: (i: number) => void
   onJump: (i: number) => void
   onCut: (i: number) => void
@@ -80,7 +79,6 @@ export function RunningOrder(props: {
     starts.push(new Date(t))
     t += (tr.duration ?? 0) * 1000
   }
-  const endsAt = new Date(t)
 
   const actionsFor = (i: number, tr: Track): RowAction[] => [
     { icon: 'playNext', label: 'Play next', key: 'N', run: () => props.onPlayNext(i) },
@@ -120,19 +118,6 @@ export function RunningOrder(props: {
           return row(tr, i, { aside: <time title={fmtDuration(tr.duration)}>{fmtClock(starts[k])}</time> })
         })}
       </ol>
-      <div className="horizon">
-        {props.autoMix ? (
-          <>
-            <p className="horizon-title">MusicIP keeps going from here</p>
-            <p className="horizon-note">
-              When two tracks are left, it adds a new mix seeded from five random tracks in this list, played ones included.
-              Cutting a track also takes it out of that pool.
-            </p>
-          </>
-        ) : (
-          <p className="horizon-title">Queue ends at {fmtClock(endsAt)}</p>
-        )}
-      </div>
     </section>
   )
 }
