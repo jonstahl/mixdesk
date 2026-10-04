@@ -154,7 +154,7 @@ export async function clearPlayed(p: string, currentIndex: number) {
 
 // --- MusicIP -----------------------------------------------------------------
 
-// Year seeds aren't offered: MusicIP returns nothing for them on this server.
+// Year seeds aren't offered: MusicIP returns nothing for them.
 export type Seed = { kind: 'track' | 'album' | 'artist' | 'genre'; id: string | number; label: string }
 
 const SEED_PARAM: Record<Seed['kind'], string> = { track: 'song_id', album: 'album_id', artist: 'artist_id', genre: 'genre_id' }

@@ -42,7 +42,7 @@ export function Draft(props: {
         </div>
       </header>
       {draft.error ? (
-        <p className="draft-error">MusicIP didn't answer: {draft.error}. Check that the MusicIP service is running on the NAS.</p>
+        <p className="draft-error">MusicIP didn't answer: {draft.error}. Check that MusicIP is running and that LMS can reach it (see the MusicIP plugin settings).</p>
       ) : draft.empty ? (
         <p className="draft-error">
           MusicIP has no mix for {draft.seed.label}. Usually that means it hasn't analysed these tracks yet; recently added

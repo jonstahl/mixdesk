@@ -12,6 +12,7 @@ rmSync('build', { recursive: true, force: true })
 cpSync('lms-plugin/Mixdesk', 'build/Mixdesk', { recursive: true })
 // LMS serves .js/.css from plugins' HTML/EN folders itself; see Plugin.pm.
 cpSync('dist', 'build/Mixdesk/HTML/EN/mixdesk', { recursive: true })
+cpSync('LICENSE', 'build/Mixdesk/LICENSE')
 
 const manifest = 'build/Mixdesk/install.xml'
 writeFileSync(manifest, readFileSync(manifest, 'utf8').replace(/<version>[^<]*<\/version>/, `<version>${version}</version>`))
