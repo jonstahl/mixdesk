@@ -1,7 +1,7 @@
 {
   "name": "mixdesk",
   "private": true,
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "A web interface for Lyrion Music Server built around previewing and pruning MusicIP mixes",
   "license": "GPL-2.0-only",
   "type": "module",
