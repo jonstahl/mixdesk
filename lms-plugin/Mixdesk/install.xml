@@ -3,7 +3,7 @@
 	<id>afe6075b-37ba-4df2-b5b8-d46ae3806aec</id>
 	<name>PLUGIN_MIXDESK</name>
 	<module>Plugins::Mixdesk::Plugin</module>
-	<version>1.0.0</version>
+	<version>1.1.0</version>
 	<description>PLUGIN_MIXDESK_DESC</description>
 	<creator>Jon Stahl</creator>
 	<category>skin</category>
