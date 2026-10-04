@@ -24,16 +24,33 @@ from Google Fonts, and falls back to a system font when offline.
 
 ## Install
 
+### From LMS (recommended)
+
+1. In LMS, open *Settings → Manage Plugins*, scroll to *Additional
+   Repositories*, add this URL and save:
+
+   ```
+   https://raw.githubusercontent.com/jonstahl/mixdesk/main/repo.xml
+   ```
+
+2. Mixdesk now appears in the plugin list. Tick it, apply, and restart LMS
+   when asked. LMS offers updates the same way.
+3. Open `http://<your-lms>:9000/mixdesk/` on any device.
+
+### By hand
+
 1. Download `Mixdesk-<version>.zip` from the
-   [releases](../../releases) page, or build it yourself (below).
+   [releases](https://github.com/jonstahl/mixdesk/releases) page, or build
+   it yourself (below).
 2. Unzip it into one of LMS's plugin folders, so you have
    `.../Plugins/Mixdesk/install.xml`. *Settings → Information* lists the
    folders your server reads. For the Docker image this is
    `<config>/cache/Plugins`. Don't use `InstalledPlugins`: LMS removes
    anything there that it didn't install from a repository.
-3. Restart LMS. Mixdesk appears under *Settings → Manage Plugins* and is
-   enabled by default.
-4. Open `http://<your-lms>:9000/mixdesk/` on any device.
+3. Restart LMS, then open `http://<your-lms>:9000/mixdesk/`.
+
+Use one route or the other. A hand-installed copy and a repository-installed
+one would both be named Mixdesk.
 
 ## Develop
 
@@ -65,6 +82,18 @@ stamped into the plugin's `install.xml`.
 
 Restart LMS after the first deploy, and whenever `Plugin.pm` changes. App
 changes are live as soon as a deploy finishes; just reload the page.
+
+### Releasing
+
+`npm run package` also rewrites `repo.xml` with the new version, the
+release download URL, and the zip's SHA-1. LMS refuses a download whose
+SHA-1 doesn't match, so the zip attached to the release must be the one
+from that same run:
+
+1. Bump `version` in `package.json` and run `npm run package`.
+2. Commit, including `repo.xml`, and tag `v<version>`.
+3. Push, then create the GitHub release for the tag with
+   `build/Mixdesk-<version>.zip` attached.
 
 ## How it works
 

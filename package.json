@@ -4,6 +4,10 @@
   "version": "1.0.0",
   "description": "A web interface for Lyrion Music Server built around previewing and pruning MusicIP mixes",
   "license": "GPL-2.0-only",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jonstahl/mixdesk"
+  },
   "type": "module",
   "scripts": {
     "dev": "vite",

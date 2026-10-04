@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<extensions>
+	<details>
+		<title lang="EN">Mixdesk</title>
+	</details>
+	<plugins>
+		<plugin name="Mixdesk" version="1.0.0" minTarget="9.0" maxTarget="*">
+			<title lang="EN">Mixdesk</title>
+			<desc lang="EN">A web interface built around MusicIP mixes: pick a seed, preview the mix, prune it. Open it at /mixdesk/ on this server.</desc>
+			<creator>Jon Stahl</creator>
+			<category>skin</category>
+			<link>https://github.com/jonstahl/mixdesk</link>
+			<url>https://github.com/jonstahl/mixdesk/releases/download/v1.0.0/Mixdesk-1.0.0.zip</url>
+			<sha>d9b6459ffc713ce9036baf9753275e8662785057</sha>
+		</plugin>
+	</plugins>
+</extensions>
