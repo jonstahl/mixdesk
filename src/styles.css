@@ -1,3 +1,11 @@
+/* Registered as a colour so a cover change fades the accent (and everything
+   derived from it, like --wash) instead of snapping. */
+@property --accent {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #f0b43c;
+}
+
 :root {
   --ink: #18212b;
   --deck: #1f2a36;
@@ -20,6 +28,7 @@
   --cover: clamp(260px, min(44vh, 34vw), 460px);
 
   color-scheme: dark;
+  transition: --accent 900ms ease;
 }
 
 * {
@@ -1327,6 +1336,10 @@ input[type='range'] {
   }
 
   .now {
+    transition: none;
+  }
+
+  :root {
     transition: none;
   }
 }
