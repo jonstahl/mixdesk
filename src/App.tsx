@@ -125,6 +125,17 @@ export default function App() {
     }, CURSOR_IDLE_MS)
   }
 
+  // Song first: tabs are narrow, so a trailing app name would be cut off.
+  const playing = status?.mode === 'play'
+  useEffect(() => {
+    if (!current) {
+      document.title = 'Mixdesk'
+      return
+    }
+    const song = current.artist ? `${current.title} — ${current.artist}` : current.title
+    document.title = playing ? song : `⏸ ${song}`
+  }, [current?.title, current?.artist, playing])
+
   // The current cover sets the accent for the whole desk.
   const coverKey = current ? lms.coverUrl(current.coverid, 600) : ''
   useEffect(() => {
