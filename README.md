@@ -103,8 +103,12 @@ from that same run:
   touching the queue*. Cut what you don't want, then play it, queue it after
   the current track, or add it to the end. "New mix" asks again; MusicIP mixes
   are random, so each one is different.
-- **Variety** slider writes `plugin.musicip:mix_variety`, the same server pref
-  Don't Stop The Music uses for its automatic mixes.
+- **Variety** slider writes `plugin.musicip:mix_variety` on both the server and
+  the selected player. A player's own value overrides the server's when
+  MusicIP builds a mix, so setting only the server pref would do nothing for a
+  player that has one. Don't Stop The Music uses the same pref for its
+  automatic mixes. 0 is repeatable; anything above that is a different random
+  draw each time, and the higher it goes the wider the pool.
 - **Don't Stop The Music** seeds its next mix from five random tracks across the
   *whole* queue, played tracks included (see
   `Slim/Plugin/DontStopTheMusic/Plugin.pm`, `getMixableProperties`). That's

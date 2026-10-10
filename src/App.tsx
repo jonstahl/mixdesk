@@ -92,8 +92,19 @@ export default function App() {
       const pick = ps.find((p) => p.playerid === saved) ?? ps.find((p) => p.connected) ?? ps[0]
       if (pick) setPlayer(pick.playerid)
     })
-    lms.getVariety().then(setVarietyState)
   }, [])
+
+  // Variety can be set per player, so it's read again when the player changes.
+  useEffect(() => {
+    if (!player) return
+    let stale = false
+    lms.getVariety(player).then((v) => {
+      if (!stale) setVarietyState(v)
+    })
+    return () => {
+      stale = true
+    }
+  }, [player])
 
   useEffect(() => {
     if (!player) return
@@ -223,7 +234,7 @@ export default function App() {
     setVarietyState(v)
     clearTimeout(varietyTimer.current)
     varietyTimer.current = window.setTimeout(async () => {
-      await lms.setVariety(v)
+      await lms.setVariety(player, v)
       if (draft) startDraft(draft.seed)
     }, 350)
   }

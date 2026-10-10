@@ -195,12 +195,25 @@ export async function previewMix(p: string, seed: Seed): Promise<Track[]> {
   return r.titles_loop ?? []
 }
 
-export async function getVariety(): Promise<number> {
-  const r = await rpc<{ _p2?: string }>('', ['pref', 'plugin.musicip:mix_variety', '?'])
+const VARIETY_PREF = 'plugin.musicip:mix_variety'
+
+// MusicIP mixes use a player's own variety when it has one (a player's mix
+// settings menu or a skin can set it, and it then sticks), and only fall back
+// to the server's. Touching just the server pref leaves such a player
+// ignoring the slider, so both are read and written.
+export async function getVariety(p: string | null): Promise<number> {
+  if (p) {
+    const own = await rpc<{ _p2?: string | null }>(p, ['playerpref', VARIETY_PREF, '?'])
+    if (own._p2 != null && own._p2 !== '') return Number(own._p2)
+  }
+  const r = await rpc<{ _p2?: string | null }>('', ['pref', VARIETY_PREF, '?'])
   return Number(r._p2 ?? 0)
 }
 
-export const setVariety = (v: number) => rpc('', ['pref', 'plugin.musicip:mix_variety', v])
+export async function setVariety(p: string | null, v: number) {
+  await rpc('', ['pref', VARIETY_PREF, v])
+  if (p) await rpc(p, ['playerpref', VARIETY_PREF, v])
+}
 
 // --- search ------------------------------------------------------------------
 
