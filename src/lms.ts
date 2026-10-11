@@ -337,8 +337,6 @@ export type StatSummary = {
   stars: Record<number, number>
   /** Plays per local calendar day, as days since 1970-01-01. */
   days: { day: number; plays: number }[]
-  eras: { decade: number; plays: number }[]
-  noYear: number
 }
 
 type Num = number | string
@@ -355,10 +353,8 @@ export async function getStats(range: StatRange): Promise<StatSummary> {
     first?: Num
     library?: Num
     rated?: Num
-    no_year?: Num
     stars_loop?: { stars: Num; tracks: Num }[]
     days_loop?: { day: Num; plays: Num }[]
-    eras_loop?: { decade: Num; plays: Num }[]
   }>('', ['mixdesk', 'stats', `days:${range}`, `tz:${tz}`])
   return {
     available: Number(r.available) === 1,
@@ -371,8 +367,6 @@ export async function getStats(range: StatRange): Promise<StatSummary> {
     rated: Number(r.rated ?? 0),
     stars: Object.fromEntries((r.stars_loop ?? []).map((s) => [Number(s.stars), Number(s.tracks)])),
     days: (r.days_loop ?? []).map((d) => ({ day: Number(d.day), plays: Number(d.plays) })),
-    eras: (r.eras_loop ?? []).map((e) => ({ decade: Number(e.decade), plays: Number(e.plays) })),
-    noYear: Number(r.no_year ?? 0),
   }
 }
 
@@ -389,6 +383,28 @@ export async function getStatArtists(range: StatRange, start: number, count: num
   return {
     total: Number(r.count ?? 0),
     artists: (r.artists_loop ?? []).map((a) => ({ id: Number(a.id), artist: a.artist, plays: Number(a.plays), mixable: Number(a.mixable) === 1 })),
+  }
+}
+
+/** An artist on an album in the library, with none of their tracks ever played. */
+export type UnplayedArtist = { id: number; artist: string; albums: number; mixable: boolean; coverid?: string }
+
+/** A random sample, different on every call, and how many there are in all. */
+export async function getUnplayedArtists(count: number): Promise<{ total: number; artists: UnplayedArtist[] }> {
+  const r = await rpc<{ count?: Num; artists_loop?: { id: Num; artist: string; albums: Num; mixable: Num; coverid?: string }[] }>('', [
+    'mixdesk',
+    'statunplayed',
+    count,
+  ])
+  return {
+    total: Number(r.count ?? 0),
+    artists: (r.artists_loop ?? []).map((a) => ({
+      id: Number(a.id),
+      artist: a.artist,
+      albums: Number(a.albums),
+      mixable: Number(a.mixable) === 1,
+      coverid: a.coverid || undefined,
+    })),
   }
 }
 
@@ -429,6 +445,9 @@ export function hasRating(): Promise<boolean> {
 
 /** 4 stars or better is what Mixdesk and the Stats page call loved. */
 export const LOVED_STARS = 4
+
+/** 1 or 2 stars is disliked. The dislike button sets 1. */
+export const DISLIKED_STARS = 2
 
 /** TrackStat's rating for a track, 0 to 5 stars. */
 export async function getRating(trackId: number): Promise<number> {

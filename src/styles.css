@@ -325,14 +325,19 @@ input[type='range'] {
   white-space: nowrap;
 }
 
-.love-btn {
+.rate-btn {
   width: 40px;
   height: 40px;
 }
 
-.love-btn.is-loved,
-.love-btn.is-loved:hover {
+.love-btn.is-on,
+.love-btn.is-on:hover {
   color: var(--accent);
+}
+
+.dislike-btn.is-on,
+.dislike-btn.is-on:hover {
+  color: var(--coral);
 }
 
 /* ---- buttons -------------------------------------------------------------- */
@@ -1715,51 +1720,8 @@ input[type='range'] {
   margin-left: 4px;
 }
 
-.eras {
-  display: flex;
-  align-items: stretch;
-  gap: 8px;
-  height: 200px;
-}
-
-.era {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-}
-
-.era-value,
-.era-label {
-  font-size: 12px;
-  color: var(--dim);
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-}
-
-.era-value {
-  height: 16px;
-}
-
-.era-plot {
-  flex: 1;
-  min-height: 0;
-  width: 100%;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-}
-
-.era-bar {
-  display: block;
-  width: 100%;
-  max-width: 28px;
-  border-radius: 4px 4px 0 0;
-  background: color-mix(in oklab, var(--paper) 30%, var(--deck));
-}
-
-.era.is-peak .era-bar {
-  background: var(--accent);
+/* Tiles without art keep their tint here: the card is the same colour as the
+   plain tile background the album grid normally uses. */
+.stat-unplayed .tile-cover.cover-blank {
+  background: hsl(var(--hue) 22% 26%);
 }

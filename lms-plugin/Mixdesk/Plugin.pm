@@ -11,7 +11,8 @@ package Plugins::Mixdesk::Plugin;
 # LMS itself, so it's all same-origin.
 #
 # The one thing LMS can't answer is what TrackStat has recorded over time, so
-# three read-only CLI queries (mixdesk stats / statartists / statlapsed) read
+# four read-only CLI queries (mixdesk stats / statartists / statlapsed /
+# statunplayed) read
 # its tables through Plugins::Mixdesk::Stats and hand the Stats page small
 # summaries instead of the whole history.
 
@@ -57,6 +58,7 @@ sub initPlugin {
 	Slim::Control::Request::addDispatch(['mixdesk', 'stats'], [0, 1, 1, \&_statsQuery]);
 	Slim::Control::Request::addDispatch(['mixdesk', 'statartists', '_index', '_quantity'], [0, 1, 1, \&_artistsQuery]);
 	Slim::Control::Request::addDispatch(['mixdesk', 'statlapsed', '_index', '_quantity'], [0, 1, 1, \&_lapsedQuery]);
+	Slim::Control::Request::addDispatch(['mixdesk', 'statunplayed', '_quantity'], [0, 1, 1, \&_unplayedQuery]);
 
 	return unless main::WEBUI;
 
@@ -104,7 +106,7 @@ sub _statsQuery {
 		);
 	}) or return;
 
-	$request->addResult($_, $s->{$_} || 0) for qw(plays tracks artists active_days first library rated no_year);
+	$request->addResult($_, $s->{$_} || 0) for qw(plays tracks artists active_days first library rated);
 
 	my $i = 0;
 	for my $star (sort { $a <=> $b } keys %{ $s->{stars} }) {
@@ -116,12 +118,6 @@ sub _statsQuery {
 	for my $d (@{ $s->{days} }) {
 		$request->addResultLoop('days_loop', $i, 'day', $d->[0]);
 		$request->addResultLoop('days_loop', $i, 'plays', $d->[1]);
-		$i++;
-	}
-	$i = 0;
-	for my $e (@{ $s->{eras} }) {
-		$request->addResultLoop('eras_loop', $i, 'decade', $e->[0]);
-		$request->addResultLoop('eras_loop', $i, 'plays', $e->[1]);
 		$i++;
 	}
 	$request->setStatusDone();
@@ -139,6 +135,22 @@ sub _artistsQuery {
 			items => $items,
 			now   => time(),
 		);
+	}) or return;
+
+	$request->addResult('count', $r->{count});
+	my $i = 0;
+	for my $a (@{ $r->{artists} }) {
+		$request->addResultLoop('artists_loop', $i, $_, $a->{$_}) for keys %$a;
+		$i++;
+	}
+	$request->setStatusDone();
+}
+
+sub _unplayedQuery {
+	my $request = shift;
+	my $items = _int($request->getParam('_quantity'), 12);
+	my $r = _stats_query($request, 'statunplayed', sub {
+		Plugins::Mixdesk::Stats::unplayed(shift, items => $items);
 	}) or return;
 
 	$request->addResult('count', $r->{count});

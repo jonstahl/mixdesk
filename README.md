@@ -104,19 +104,21 @@ from that same run:
   touching the queue*. Cut what you don't want, then play it, queue it after
   the current track, or add it to the end. "New mix" asks again; MusicIP mixes
   are random, so each one is different.
-- **Stats** (desktop only, needs TrackStat) charts what TrackStat has recorded:
-  plays per day over the last year, the artists you play most, and tracks you
-  rated 4 or 5 stars but haven't played in over a year. Each list ends in a mix
-  button, so a number is a place to start a mix from. The range (30 days, 12
-  months, all time) applies to everything except the calendar, which is always
-  the last year, and to rated tracks, which are rated whenever they were. Only
-  plays of files LMS still has are counted. The figures come from three
+- **Stats** (desktop only, needs TrackStat) charts what TrackStat has
+  recorded: plays per day over the last year, the artists you play most, tracks
+  you rated 4 or 5 stars but haven't played in over a year, and a shuffleable
+  grid of artists you own and have never played. Each list has mix buttons, so
+  a number is a place to start a mix from. The range (30 days, 12 months, all
+  time) applies to the figures and the artists list; the calendar is always the
+  last year, and the rated and never-played lists don't depend on it. Only
+  plays of files LMS still has are counted. The figures come from four
   read-only queries the Mixdesk plugin adds (`mixdesk stats`, `statartists`,
-  `statlapsed`), so after updating the app, restart LMS once.
-- **Rating**: the star beside *Mix from this* (phones too) rates the playing
-  track 5 stars through TrackStat, or clears the rating if it's already loved.
-  "Loved" means 4 stars or better, as TrackStat itself shows them: it treats
-  the odd rating stored on a 1-5 scale as unrated, so Mixdesk does too.
+  `statlapsed`, `statunplayed`), so after updating the app, restart LMS once.
+- **Rating**: beside *Mix from this* (phones too) a star rates the playing
+  track 5 stars through TrackStat and a thumbs-down rates it 1 star. Pressing
+  one that's lit clears the rating. "Loved" means 4 stars or better, as
+  TrackStat itself shows them: it treats the odd rating stored on a 1-5 scale
+  as unrated, so Mixdesk does too.
 - **Variety** slider writes `plugin.musicip:mix_variety` on both the server and
   the selected player. A player's own value overrides the server's when
   MusicIP builds a mix, so setting only the server pref would do nothing for a

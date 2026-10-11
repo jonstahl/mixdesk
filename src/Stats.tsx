@@ -1,10 +1,10 @@
 import { useMemo, useState } from 'react'
 import * as lms from './lms'
-import type { LapsedTrack, Seed, StatRange, StatSummary, Track } from './lms'
+import type { LapsedTrack, Seed, StatRange, StatSummary, Track, UnplayedArtist } from './lms'
 import { PageHead, Status, useLoad } from './Library'
 import { href } from './router'
 import { TrackRow, type RowAction } from './RunningOrder'
-import { Icon } from './ui'
+import { Cover, Icon } from './ui'
 
 // What TrackStat has recorded, drawn. Every list ends in a way to start a
 // mix, so a number is somewhere to start from rather than just a report.
@@ -81,7 +81,7 @@ export function Stats({ onMix, onTrack }: Props) {
           <Calendar s={s} now={now} />
           <Artists key={range} range={range} phrase={phrase} onMix={onMix} />
           <Lapsed now={now} onMix={onMix} onTrack={onTrack} />
-          <Eras s={s} phrase={phrase} />
+          <Unplayed onMix={onMix} />
         </>
       )}
     </section>
@@ -352,41 +352,64 @@ function Lapsed({ now, onMix, onTrack }: Pick<Props, 'onMix' | 'onTrack'> & { no
   )
 }
 
-// --- eras ----------------------------------------------------------------------------
+// --- never played -------------------------------------------------------------------
 
-function Eras({ s, phrase }: { s: StatSummary; phrase: string }) {
-  const decades = useMemo(() => {
-    if (!s.eras.length) return []
-    const byDecade = new Map(s.eras.map((e) => [e.decade, e.plays]))
-    const first = Math.min(...byDecade.keys())
-    const last = Math.max(...byDecade.keys())
-    const out: { decade: number; plays: number }[] = []
-    for (let d = first; d <= last; d += 10) out.push({ decade: d, plays: byDecade.get(d) ?? 0 })
-    return out
-  }, [s.eras])
-  if (!decades.length) return null
-  const peak = Math.max(...decades.map((d) => d.plays))
+const UNPLAYED_COUNT = 12
+
+/**
+ * A random handful of artists you own and have never played, as a grid: the
+ * square opens them in the library, and the round button mixes from them.
+ */
+function Unplayed({ onMix }: Pick<Props, 'onMix'>) {
+  const [shuffle, setShuffle] = useState(0)
+  const list = useLoad(() => lms.getUnplayedArtists(UNPLAYED_COUNT), [shuffle])
+  const items = list.data?.artists ?? []
+  // No unplayed artists is a good problem; the section only appears with some.
+  if (list.data && !list.data.total) return null
 
   return (
     <section className="stat-card">
       <header className="stat-head">
         <div>
-          <h2>Eras</h2>
-          <p>Plays by release decade in {phrase}.</p>
+          <h2>Never played</h2>
+          <p>
+            {list.data ? `${n(list.data.total)} artists in your library you haven't played yet.` : 'Artists in your library you haven’t played yet.'}
+          </p>
         </div>
+        <button className="text-btn" onClick={() => setShuffle((x) => x + 1)}>
+          <Icon name="reroll" size={18} /> Shuffle
+        </button>
       </header>
-      <div className="eras" role="img" aria-label="Plays by release decade">
-        {decades.map((d) => (
-          <div key={d.decade} className={'era' + (d.plays === peak ? ' is-peak' : '')} title={`${d.decade}s: ${n(d.plays)} plays`}>
-            <span className="era-value">{d.plays === peak ? n(d.plays) : ''}</span>
-            <span className="era-plot">
-              <span className="era-bar" style={{ height: `${Math.max(d.plays ? 2 : 0, (d.plays / peak) * 100)}%` }} />
-            </span>
-            <span className="era-label">{d.decade}s</span>
-          </div>
+      <Status error={list.error} loading={list.loading && !list.data} />
+      <ul className="album-grid stat-unplayed" aria-busy={list.loading}>
+        {items.map((a) => (
+          <UnplayedTile key={a.id} artist={a} onMix={onMix} />
         ))}
-      </div>
-      {s.noYear > 0 && <p className="stat-foot">{n(s.noYear)} plays have no year tag and aren’t shown.</p>}
+      </ul>
     </section>
+  )
+}
+
+function UnplayedTile({ artist: a, onMix }: { artist: UnplayedArtist; onMix: Props['onMix'] }) {
+  return (
+    <li className="tile">
+      {a.mixable && (
+        <div className="tile-actions">
+          <button
+            className="tile-btn"
+            title="Mix from this artist"
+            aria-label={`Mix from ${a.artist}`}
+            onClick={() => onMix({ kind: 'artist', id: a.id, label: a.artist })}
+          >
+            <Icon name="mix" size={14} />
+          </button>
+        </div>
+      )}
+      <a href={href({ page: 'artist', id: String(a.id), name: a.artist })}>
+        <Cover className="tile-cover" src={lms.coverUrl(a.coverid, 300)} name={a.artist} />
+        <span className="tile-title">{a.artist}</span>
+        <span className="tile-sub">{a.albums === 1 ? '1 album' : `${n(a.albums)} albums`}</span>
+      </a>
+    </li>
   )
 }

@@ -91,15 +91,6 @@ sub summary {
 		undef, $tz, $now - CALENDAR_DAYS * DAY
 	);
 
-	# Plays by release decade. A year under 1000 is a mistag, not an era.
-	$r{eras} = $dbh->selectall_arrayref(
-		"SELECT (t.year / 10) * 10, COUNT(*) $joined AND t.year >= 1000 GROUP BY 1 ORDER BY 1",
-		undef, $since
-	);
-	my $dated = 0;
-	$dated += $_->[1] for @{ $r{eras} };
-	$r{no_year} = $r{plays} - $dated;
-
 	return \%r;
 }
 
@@ -188,6 +179,64 @@ sub lapsed {
 					last      => $_->[9],
 				}
 			} @$rows
+		],
+	};
+}
+
+=head2 unplayed($dbh, items => N)
+
+A random sample of artists on albums in the library that have never been
+played, and how many such artists there are. "Never played" means none of
+their tracks is in the history and none has a play count, so a track played
+before TrackStat kept a history still counts as heard. Compilation credits
+("Various ...") aren't artists to start from, so they're left out.
+
+`mixable` is true when MusicIP has analysed any track of theirs, and
+`coverid` is the cover of one of their tracks, if any has one.
+
+=cut
+
+sub unplayed {
+	my ($dbh, %o) = @_;
+	my $items = int($o{items} || 12);
+
+	my $from = q{
+		FROM contributors c
+		WHERE c.id IN (SELECT contributor FROM contributor_album WHERE role IN (1, 5))
+		  AND c.name NOT LIKE 'Various%'
+		  AND c.musicbrainz_id IS NOT '89ad4ac3-39f7-470e-963a-56509c546377'
+		  AND c.id NOT IN (
+		        SELECT ct.contributor
+		          FROM contributor_track ct
+		          JOIN tracks t ON t.id = ct.track
+		          JOIN persistentdb.track_history h ON h.url = t.url
+		         WHERE h.played > 0
+		        UNION
+		        SELECT ct.contributor
+		          FROM contributor_track ct
+		          JOIN tracks t ON t.id = ct.track
+		          JOIN persistentdb.track_statistics s ON s.url = t.url
+		         WHERE s.playCount > 0)
+	};
+
+	my ($count) = $dbh->selectrow_array("SELECT COUNT(*) $from");
+
+	my $rows = $dbh->selectall_arrayref(
+		"SELECT c.id, c.name,
+		        (SELECT COUNT(DISTINCT ca.album) FROM contributor_album ca
+		          WHERE ca.contributor = c.id AND ca.role IN (1, 5)),
+		        (SELECT COALESCE(MAX(t.musicmagic_mixable), 0) FROM contributor_track ct
+		          JOIN tracks t ON t.id = ct.track WHERE ct.contributor = c.id),
+		        (SELECT t.coverid FROM contributor_track ct
+		          JOIN tracks t ON t.id = ct.track
+		         WHERE ct.contributor = c.id AND t.coverid IS NOT NULL LIMIT 1)
+		   $from ORDER BY RANDOM() LIMIT $items"
+	);
+
+	return {
+		count => $count || 0,
+		artists => [
+			map { { id => $_->[0], artist => _text($_->[1]), albums => $_->[2], mixable => $_->[3] ? 1 : 0, coverid => $_->[4] // '' } } @$rows
 		],
 	};
 }

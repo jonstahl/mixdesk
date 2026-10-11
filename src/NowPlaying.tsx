@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type RefObject } from 'react'
-import { coverUrl, getRating, hasRating, isMixable, LOVED_STARS, setRating, type Status, type Track } from './lms'
+import { coverUrl, DISLIKED_STARS, getRating, hasRating, isMixable, LOVED_STARS, setRating, type Status, type Track } from './lms'
 import { href } from './router'
 import { Cover, fmtDuration, Icon } from './ui'
 
@@ -51,7 +51,7 @@ export function NowPlaying(props: {
           <Icon name="next" size={26} />
         </button>
         <div className="transport-end">
-          <Love track={track} player={props.player} onError={props.onError} />
+          <Rate track={track} player={props.player} onError={props.onError} />
           {isMixable(track) && (
             <button className="text-btn transport-mix" onClick={() => props.onMix(track)}>
               <Icon name="mix" size={18} /> Mix from this
@@ -64,11 +64,12 @@ export function NowPlaying(props: {
 }
 
 /**
- * TrackStat rating as one star: lit when the track is loved (4 stars or
- * better), and a click sets 5 stars or clears the rating. Hidden when
- * TrackStat isn't installed.
+ * TrackStat rating as two buttons. The star is lit when the track is loved
+ * (4 stars or better) and sets 5 stars; the thumb is lit when it's disliked
+ * (1 or 2 stars) and sets 1. Pressing a lit one clears the rating. Hidden
+ * when TrackStat isn't installed.
  */
-function Love({ track, player, onError }: { track: Track; player: string | null; onError: (text: string) => void }) {
+function Rate({ track, player, onError }: { track: Track; player: string | null; onError: (text: string) => void }) {
   const [available, setAvailable] = useState(false)
   // Keyed by track, so a new track reads as "not loaded" without resetting state.
   const [rated, setRated] = useState<{ id: number; stars: number } | null>(null)
@@ -90,28 +91,42 @@ function Love({ track, player, onError }: { track: Track; player: string | null;
 
   if (!available) return null
   const loved = (stars ?? 0) >= LOVED_STARS
-  const toggle = () => {
+  const disliked = (stars ?? 0) >= 1 && (stars ?? 0) <= DISLIKED_STARS
+  const rate = (next: number) => {
     if (!player || stars === null) return
     const before = stars
-    const next = loved ? 0 : 5
     setRated({ id: track.id, stars: next })
     setRating(player, track.id, next).catch(() => {
       setRated({ id: track.id, stars: before })
       onError(`TrackStat didn't take that rating for “${track.title}”`)
     })
   }
-  const label = loved ? 'Loved. Click to clear the rating' : 'Love this track (5 stars)'
+  const busy = !player || stars === null
+  const dislikeLabel = disliked ? 'Disliked. Click to clear the rating' : 'Dislike this track (1 star)'
+  const loveLabel = loved ? 'Loved. Click to clear the rating' : 'Love this track (5 stars)'
   return (
-    <button
-      className={'icon-btn love-btn' + (loved ? ' is-loved' : '')}
-      onClick={toggle}
-      disabled={!player || stars === null}
-      aria-pressed={loved}
-      aria-label={label}
-      title={label}
-    >
-      <Icon name="star" size={22} />
-    </button>
+    <>
+      <button
+        className={'icon-btn rate-btn dislike-btn' + (disliked ? ' is-on' : '')}
+        onClick={() => rate(disliked ? 0 : 1)}
+        disabled={busy}
+        aria-pressed={disliked}
+        aria-label={dislikeLabel}
+        title={dislikeLabel}
+      >
+        <Icon name="thumbDown" size={20} />
+      </button>
+      <button
+        className={'icon-btn rate-btn love-btn' + (loved ? ' is-on' : '')}
+        onClick={() => rate(loved ? 0 : 5)}
+        disabled={busy}
+        aria-pressed={loved}
+        aria-label={loveLabel}
+        title={loveLabel}
+      >
+        <Icon name="star" size={22} />
+      </button>
+    </>
   )
 }
 
