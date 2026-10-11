@@ -11,6 +11,7 @@ import { Settings } from './Settings'
 import { go, href, useRoute, type Route } from './router'
 import { accentFromCover } from './palette'
 import { Icon } from './ui'
+import { VolumeControl } from './VolumeControl'
 
 const PLAYER_KEY = 'mixdesk.player'
 const LEAVE_MS = 160
@@ -410,22 +411,14 @@ export default function App() {
           ) : (
             <span className="player-name">{players[0]?.name}</span>
           )}
-          <label className="volume">
-            <Icon name="volume" size={18} />
-            <input
-              type="range"
-              min={0}
-              max={100}
-              value={volume ?? 0}
-              aria-label="Volume"
-              onChange={(e) => {
-                const v = Number(e.target.value)
-                setVolumeState(v)
-                clearTimeout(volTimer.current)
-                volTimer.current = window.setTimeout(() => player && lms.setVolume(player, v), 120)
-              }}
-            />
-          </label>
+          <VolumeControl
+            value={volume ?? 0}
+            onChange={(v) => {
+              setVolumeState(v)
+              clearTimeout(volTimer.current)
+              volTimer.current = window.setTimeout(() => player && lms.setVolume(player, v), 120)
+            }}
+          />
           <a
             className="icon-btn"
             href={href(route.page === 'settings' ? beforeSettings : { page: 'settings', section: 'server' })}

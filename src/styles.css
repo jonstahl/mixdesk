@@ -1356,6 +1356,60 @@ input[type='range'] {
   }
 }
 
+/* Phones: the speaker icon opens a vertical slider under the topbar. */
+@media (max-width: 600px) {
+  .volume {
+    position: relative;
+    flex: none;
+  }
+
+  .topbar-player select,
+  .player-name {
+    max-width: none;
+  }
+
+  .volume-pop {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    z-index: 20;
+    display: grid;
+    justify-items: center;
+    gap: 6px;
+    padding: 10px 6px 6px;
+    background: var(--deck);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgb(0 0 0 / 0.4);
+  }
+
+  .volume-pop output {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--dim);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* A rotated range input: the box is 48px wide by 160px tall, and the slider
+     inside it is laid out horizontally, then turned to run bottom to top. */
+  .volume-track {
+    position: relative;
+    width: 48px;
+    height: 160px;
+  }
+
+  .volume-track input {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 160px;
+    height: 48px;
+    min-width: 0;
+    transform: translate(-50%, -50%) rotate(-90deg);
+    touch-action: none;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .row.is-leaving {
     animation: none;
