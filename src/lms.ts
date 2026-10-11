@@ -303,3 +303,137 @@ export function getTotals(): Promise<LibraryTotals> {
     })),
   )
 }
+
+// --- TrackStat ---------------------------------------------------------------------
+
+/**
+ * Stats need the Mixdesk plugin's queries (a plugin from before they existed
+ * doesn't have them) and TrackStat itself, which they read.
+ */
+export function hasStats(): Promise<boolean> {
+  return cached('has stats', async () => {
+    const [ours, theirs] = await Promise.all([
+      rpc<{ _can?: number }>('', ['can', 'mixdesk', 'stats', '?']),
+      rpc<{ _can?: number }>('', ['can', 'trackstat', 'getrating', '?']),
+    ])
+    return ours._can === 1 && theirs._can === 1
+  }).catch(() => false)
+}
+
+/** Range in days; 0 is all time. */
+export type StatRange = 30 | 365 | 0
+
+export type StatSummary = {
+  available: boolean
+  plays: number
+  tracks: number
+  artists: number
+  activeDays: number
+  /** Epoch seconds of the first play in the range. */
+  first: number
+  library: number
+  rated: number
+  /** Tracks per star rating, 1 to 5. */
+  stars: Record<number, number>
+  /** Plays per local calendar day, as days since 1970-01-01. */
+  days: { day: number; plays: number }[]
+  eras: { decade: number; plays: number }[]
+  noYear: number
+}
+
+type Num = number | string
+
+export async function getStats(range: StatRange): Promise<StatSummary> {
+  // Plays are counted on the viewer's days; LMS only knows UTC.
+  const tz = -new Date().getTimezoneOffset() * 60
+  const r = await rpc<{
+    available?: Num
+    plays?: Num
+    tracks?: Num
+    artists?: Num
+    active_days?: Num
+    first?: Num
+    library?: Num
+    rated?: Num
+    no_year?: Num
+    stars_loop?: { stars: Num; tracks: Num }[]
+    days_loop?: { day: Num; plays: Num }[]
+    eras_loop?: { decade: Num; plays: Num }[]
+  }>('', ['mixdesk', 'stats', `days:${range}`, `tz:${tz}`])
+  return {
+    available: Number(r.available) === 1,
+    plays: Number(r.plays ?? 0),
+    tracks: Number(r.tracks ?? 0),
+    artists: Number(r.artists ?? 0),
+    activeDays: Number(r.active_days ?? 0),
+    first: Number(r.first ?? 0),
+    library: Number(r.library ?? 0),
+    rated: Number(r.rated ?? 0),
+    stars: Object.fromEntries((r.stars_loop ?? []).map((s) => [Number(s.stars), Number(s.tracks)])),
+    days: (r.days_loop ?? []).map((d) => ({ day: Number(d.day), plays: Number(d.plays) })),
+    eras: (r.eras_loop ?? []).map((e) => ({ decade: Number(e.decade), plays: Number(e.plays) })),
+    noYear: Number(r.no_year ?? 0),
+  }
+}
+
+export type StatArtist = { id: number; artist: string; plays: number; mixable: boolean }
+
+export async function getStatArtists(range: StatRange, start: number, count: number): Promise<{ total: number; artists: StatArtist[] }> {
+  const r = await rpc<{ count?: Num; artists_loop?: { id: Num; artist: string; plays: Num; mixable: Num }[] }>('', [
+    'mixdesk',
+    'statartists',
+    start,
+    count,
+    `days:${range}`,
+  ])
+  return {
+    total: Number(r.count ?? 0),
+    artists: (r.artists_loop ?? []).map((a) => ({ id: Number(a.id), artist: a.artist, plays: Number(a.plays), mixable: Number(a.mixable) === 1 })),
+  }
+}
+
+/** A loved track that hasn't been played in a while; `last` is epoch seconds, 0 for never. */
+export type LapsedTrack = Track & { plays: number; last: number }
+
+export async function getLapsed(start: number, count: number): Promise<{ total: number; tracks: LapsedTrack[] }> {
+  const r = await rpc<{
+    count?: Num
+    titles_loop?: { id: Num; title: string; artist?: string; artist_id?: Num | ''; album?: string; album_id?: Num | ''; coverid?: string; mixable: Num; plays: Num; last: Num }[]
+  }>('', ['mixdesk', 'statlapsed', start, count])
+  return {
+    total: Number(r.count ?? 0),
+    tracks: (r.titles_loop ?? []).map((t) => ({
+      id: Number(t.id),
+      title: t.title,
+      artist: t.artist || undefined,
+      artist_id: t.artist_id === '' || t.artist_id == null ? undefined : String(t.artist_id),
+      album: t.album || undefined,
+      album_id: t.album_id === '' || t.album_id == null ? undefined : String(t.album_id),
+      coverid: t.coverid || undefined,
+      musicmagic_mixable: Number(t.mixable) === 1 ? '1' : '0',
+      plays: Number(t.plays),
+      last: Number(t.last),
+    })),
+  }
+}
+
+// --- rating ------------------------------------------------------------------------
+
+/** Rating only needs TrackStat; the Stats queries are separate (see hasStats). */
+export function hasRating(): Promise<boolean> {
+  return cached('has rating', async () => {
+    const r = await rpc<{ _can?: number }>('', ['can', 'trackstat', 'setrating', '?'])
+    return r._can === 1
+  }).catch(() => false)
+}
+
+/** 4 stars or better is what Mixdesk and the Stats page call loved. */
+export const LOVED_STARS = 4
+
+/** TrackStat's rating for a track, 0 to 5 stars. */
+export async function getRating(trackId: number): Promise<number> {
+  const r = await rpc<{ rating?: Num }>('', ['trackstat', 'getrating', trackId])
+  return Number(r.rating ?? 0)
+}
+
+export const setRating = (p: string, trackId: number, stars: number) => rpc(p, ['trackstat', 'setrating', trackId, stars])

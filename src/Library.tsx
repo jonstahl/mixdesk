@@ -60,7 +60,7 @@ function Page(props: Props) {
 
 // --- plumbing ------------------------------------------------------------------
 
-function useLoad<T>(load: () => Promise<T>, deps: unknown[]) {
+export function useLoad<T>(load: () => Promise<T>, deps: unknown[]) {
   const [state, setState] = useState<{ data?: T; error?: string; loading: boolean }>({ loading: true })
   useEffect(() => {
     let stale = false
@@ -76,7 +76,7 @@ function useLoad<T>(load: () => Promise<T>, deps: unknown[]) {
   return state
 }
 
-function PageHead(props: { up?: Route; upLabel?: string; title: ReactNode; meta?: ReactNode; children?: ReactNode }) {
+export function PageHead(props: { up?: Route; upLabel?: string; title: ReactNode; meta?: ReactNode; children?: ReactNode }) {
   return (
     <header className="page-head">
       {props.up && (
@@ -91,7 +91,7 @@ function PageHead(props: { up?: Route; upLabel?: string; title: ReactNode; meta?
   )
 }
 
-function Status({ error, loading, empty }: { error?: string; loading: boolean; empty?: boolean }) {
+export function Status({ error, loading, empty }: { error?: string; loading: boolean; empty?: boolean }) {
   if (error) return <p className="page-note is-error">Lyrion didn't answer: {error}</p>
   if (loading) return <p className="page-note">Loading…</p>
   if (empty) return <p className="page-note">Nothing here.</p>

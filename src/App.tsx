@@ -8,6 +8,8 @@ import { Draft, type DraftState } from './Draft'
 import { Search } from './Search'
 import { Library } from './Library'
 import { Settings } from './Settings'
+import { Stats } from './Stats'
+import { useMedia } from './useMedia'
 import { go, href, useRoute, type Route } from './router'
 import { accentFromCover } from './palette'
 import { Icon } from './ui'
@@ -36,7 +38,20 @@ export default function App() {
   }, [route])
   const closeSettings = () => go(beforeSettings)
   const onQueue = route.page === 'queue'
-  const onLibrary = !onQueue && route.page !== 'settings'
+  const onStats = route.page === 'stats'
+  const onLibrary = !onQueue && !onStats && route.page !== 'settings'
+  // Stats is a desktop page: below the narrow breakpoint (see styles.css) the
+  // tab isn't offered and the route falls back to the queue.
+  const wide = useMedia('(min-width: 861px)')
+  const [statsAvailable, setStatsAvailable] = useState<boolean | null>(null)
+  useEffect(() => {
+    lms.hasStats().then(setStatsAvailable)
+  }, [])
+  const statsOn = wide && statsAvailable === true
+  const statsSettled = statsAvailable !== null
+  useEffect(() => {
+    if (onStats && statsSettled && !statsOn) go({ page: 'queue' })
+  }, [onStats, statsSettled, statsOn])
   const [players, setPlayers] = useState<lms.Player[]>([])
   const [player, setPlayer] = useState<string | null>(null)
   const { status, tracks, error, refresh, patch, clock } = usePlayer(player)
@@ -388,6 +403,11 @@ export default function App() {
           <a href={href({ page: 'library' })} aria-current={onLibrary ? 'page' : undefined} title="Library (L)">
             Library
           </a>
+          {statsOn && (
+            <a href={href({ page: 'stats' })} aria-current={onStats ? 'page' : undefined} title="What you've been playing">
+              Stats
+            </a>
+          )}
         </nav>
         <button
           className="search-trigger"
@@ -443,6 +463,8 @@ export default function App() {
           onNext={() => player && enqueue(() => lms.next(player))}
           onSeek={(s) => player && lms.seek(player, s).then(refresh)}
           onMix={mixFrom}
+          player={player}
+          onError={(text) => setToast({ text })}
         />
         {draft ? (
           <Draft
@@ -461,6 +483,8 @@ export default function App() {
           />
         ) : route.page === 'settings' ? (
           <Settings section={route.section} player={player} onClose={closeSettings} />
+        ) : onStats ? (
+          statsOn ? <Stats onMix={startDraft} onTrack={addTrack} /> : null
         ) : !onQueue ? (
           <Library route={route} onMix={startDraft} onAlbum={addAlbum} onTrack={addTrack} />
         ) : (

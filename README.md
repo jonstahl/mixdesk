@@ -17,6 +17,7 @@ its plugins, so it needs:
 | **MusicIP** plugin | Required | Mixdesk asks it for every mix (`musicip mix`) and for the variety setting. Enable it under *Settings → Manage Plugins*, or install it from the plugin list if your LMS doesn't include it. |
 | **MusicIP Mixer** (the MusicIP service) | Required | The plugin is only a bridge. The MusicIP service must be running somewhere LMS can reach, with your library analysed. Tracks it hasn't analysed can be played but not mixed from. |
 | **Material Skin** plugin | Strongly recommended | The Settings view (gear icon) frames LMS's settings pages as Material styles them. Mixdesk also asks for cover art only at the sizes Material makes LMS pre-cache (150, 300, 600px); without Material, LMS resizes covers on request, which stalls the server while it works. |
+| **TrackStat** plugin | Optional | Adds the Stats view (what you've played, and loved tracks you've drifted from) and a star on the now-playing panel that rates the track. Install it from LMS's plugin list and leave its play history on. Without it neither appears. |
 | **Don't Stop The Music** plugin | Optional | Bundled with LMS. Not used by Mixdesk directly, but if you set it to MusicIP mixes it keeps the queue going, and the variety slider applies to it too. |
 
 A modern browser (Chrome, Safari, Firefox, Edge). The app loads its typeface
@@ -103,6 +104,19 @@ from that same run:
   touching the queue*. Cut what you don't want, then play it, queue it after
   the current track, or add it to the end. "New mix" asks again; MusicIP mixes
   are random, so each one is different.
+- **Stats** (desktop only, needs TrackStat) charts what TrackStat has recorded:
+  plays per day over the last year, the artists you play most, and tracks you
+  rated 4 or 5 stars but haven't played in over a year. Each list ends in a mix
+  button, so a number is a place to start a mix from. The range (30 days, 12
+  months, all time) applies to everything except the calendar, which is always
+  the last year, and to rated tracks, which are rated whenever they were. Only
+  plays of files LMS still has are counted. The figures come from three
+  read-only queries the Mixdesk plugin adds (`mixdesk stats`, `statartists`,
+  `statlapsed`), so after updating the app, restart LMS once.
+- **Rating**: the star beside *Mix from this* (phones too) rates the playing
+  track 5 stars through TrackStat, or clears the rating if it's already loved.
+  "Loved" means 4 stars or better, as TrackStat itself shows them: it treats
+  the odd rating stored on a 1-5 scale as unrated, so Mixdesk does too.
 - **Variety** slider writes `plugin.musicip:mix_variety` on both the server and
   the selected player. A player's own value overrides the server's when
   MusicIP builds a mix, so setting only the server pref would do nothing for a

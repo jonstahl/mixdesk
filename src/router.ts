@@ -13,6 +13,7 @@ export type Route =
   | { page: 'years' }
   | { page: 'year'; year: string }
   | { page: 'new' }
+  | { page: 'stats' }
   | { page: 'settings'; section: 'server' | 'player' }
 
 export function parse(hash: string): Route {
@@ -24,6 +25,7 @@ export function parse(hash: string): Route {
     case 'genres':
     case 'years':
     case 'new':
+    case 'stats':
       return { page }
     case 'artist':
       return { page, id: a, name: b ?? '' }
