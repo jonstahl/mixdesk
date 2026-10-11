@@ -4,6 +4,7 @@ import { Icon } from './ui'
 // Below this width the topbar has no room for a horizontal slider, so the
 // speaker icon opens a vertical one instead.
 const PHONE = '(max-width: 600px)'
+const IDLE_MS = 5000
 
 const subscribe = (notify: () => void) => {
   const query = matchMedia(PHONE)
@@ -17,15 +18,36 @@ export function VolumeControl({ value, onChange }: { value: number; onChange: (v
   const [open, setOpen] = useState(false)
   const root = useRef<HTMLDivElement>(null)
 
+  // Close on a tap elsewhere, on Escape, or after a few seconds untouched.
+  // The timer is held while a finger is down, so a long drag never closes it.
   useEffect(() => {
-    if (!open) return
+    const el = root.current
+    if (!open || !el) return
+    let timer = 0
+    const hold = () => clearTimeout(timer)
+    const restart = () => {
+      hold()
+      timer = window.setTimeout(() => setOpen(false), IDLE_MS)
+    }
     const away = (e: PointerEvent) => {
-      if (!root.current?.contains(e.target as Node)) setOpen(false)
+      if (!el.contains(e.target as Node)) setOpen(false)
     }
     const esc = (e: KeyboardEvent) => e.key === 'Escape' && setOpen(false)
+    restart()
+    el.addEventListener('pointerdown', hold)
+    el.addEventListener('pointerup', restart)
+    el.addEventListener('pointercancel', restart)
+    el.addEventListener('input', restart)
+    el.addEventListener('keydown', restart)
     document.addEventListener('pointerdown', away)
     document.addEventListener('keydown', esc)
     return () => {
+      hold()
+      el.removeEventListener('pointerdown', hold)
+      el.removeEventListener('pointerup', restart)
+      el.removeEventListener('pointercancel', restart)
+      el.removeEventListener('input', restart)
+      el.removeEventListener('keydown', restart)
       document.removeEventListener('pointerdown', away)
       document.removeEventListener('keydown', esc)
     }
