@@ -354,7 +354,7 @@ function Lapsed({ now, onMix, onTrack }: Pick<Props, 'onMix' | 'onTrack'> & { no
 
 // --- never played -------------------------------------------------------------------
 
-const UNPLAYED_COUNT = 12
+const UNPLAYED_COUNT = 15
 
 /**
  * A random handful of artists you own and have never played, as a grid: the
