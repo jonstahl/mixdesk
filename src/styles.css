@@ -1283,9 +1283,36 @@ input[type='range'] {
   }
 
   .search-trigger span,
-  .search-trigger kbd,
-  .volume input {
+  .search-trigger kbd {
     display: none;
+  }
+
+  .topbar-player {
+    flex: 1;
+    min-width: 0;
+    gap: 12px;
+  }
+
+  .topbar-player select,
+  .player-name {
+    min-width: 0;
+    max-width: 40%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .volume {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .volume input {
+    flex: 1;
+    width: auto;
+    min-width: 48px;
+    margin: 0;
+    touch-action: pan-y;
   }
 
   .lib-index {
