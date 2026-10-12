@@ -1379,6 +1379,22 @@ input[type='range'] {
 
 /* Phones: the speaker icon opens a vertical slider under the topbar. */
 @media (max-width: 600px) {
+  .transport-mix-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .transport-mix {
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+  }
+
   .volume {
     position: relative;
     flex: none;

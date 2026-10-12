@@ -53,8 +53,8 @@ export function NowPlaying(props: {
         <div className="transport-end">
           <Rate track={track} player={props.player} onError={props.onError} />
           {isMixable(track) && (
-            <button className="text-btn transport-mix" onClick={() => props.onMix(track)}>
-              <Icon name="mix" size={18} /> Mix from this
+            <button className="text-btn transport-mix" onClick={() => props.onMix(track)} title="Mix from this">
+              <Icon name="mix" size={18} /> <span className="transport-mix-label">Mix from this</span>
             </button>
           )}
         </div>
