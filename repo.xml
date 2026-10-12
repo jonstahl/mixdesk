@@ -4,14 +4,14 @@
 		<title lang="EN">Mixdesk</title>
 	</details>
 	<plugins>
-		<plugin name="Mixdesk" version="1.3.1" minTarget="9.0" maxTarget="*">
+		<plugin name="Mixdesk" version="1.3.2" minTarget="9.0" maxTarget="*">
 			<title lang="EN">Mixdesk</title>
 			<desc lang="EN">A web interface built around MusicIP mixes: pick a seed, preview the mix, prune it. Open it at /mixdesk/ on this server.</desc>
 			<creator>Jon Stahl</creator>
 			<category>skin</category>
 			<link>https://github.com/jonstahl/mixdesk</link>
-			<url>https://github.com/jonstahl/mixdesk/releases/download/v1.3.1/Mixdesk-1.3.1.zip</url>
-			<sha>d0e23dfc6571d089fdabe336fc37e41d8544a972</sha>
+			<url>https://github.com/jonstahl/mixdesk/releases/download/v1.3.2/Mixdesk-1.3.2.zip</url>
+			<sha>d709850d08282a3a5634553633e8e27631962dd7</sha>
 		</plugin>
 	</plugins>
 </extensions>
