@@ -97,8 +97,22 @@ export async function getStatus(player: string, timeoutMs?: number): Promise<Sta
 }
 
 export async function getQueue(player: string, max = 1000): Promise<{ status: Status; tracks: Track[] }> {
-  const r = await rpc<RawStatus>(player, ['status', 0, max, TRACK_TAGS])
-  return { status: toStatus(r), tracks: r.playlist_loop ?? [] }
+  // LMS drops any playlist row that has no artist when the artist tags (a, s)
+  // are asked for, and the survivors are renumbered, so every row after it
+  // slides up a slot and the display lands on the wrong track. Fetch the
+  // queue without those tags to keep it positional, then fill the artists in
+  // by id from a second request (which may come back short; that's fine).
+  const [r, artists] = await Promise.all([
+    rpc<RawStatus>(player, ['status', 0, max, 'tags:cdelyM']),
+    rpc<RawStatus>(player, ['status', 0, max, 'tags:as']),
+  ])
+  const byId = new Map<number, Track>()
+  for (const t of artists.playlist_loop ?? []) byId.set(t.id, t)
+  const tracks = (r.playlist_loop ?? []).map((t) => {
+    const a = byId.get(t.id)
+    return a ? { ...t, artist: a.artist, artist_id: a.artist_id } : t
+  })
+  return { status: toStatus(r), tracks }
 }
 
 // --- transport -------------------------------------------------------------
