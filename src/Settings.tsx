@@ -1,4 +1,5 @@
-import type { SyntheticEvent } from 'react'
+import { useEffect, useState, type SyntheticEvent } from 'react'
+import { hasMaterial } from './lms'
 import { href } from './router'
 
 // LMS's own settings pages, framed. Each page has LMS's section dropdown,
@@ -8,6 +9,10 @@ export function Settings({ section, player, onClose }: { section: 'server' | 'pl
     section === 'player' && player
       ? `/settings/player/basic.html?playerid=${encodeURIComponent(player)}`
       : '/settings/server/basic.html'
+  const [material, setMaterial] = useState(false)
+  useEffect(() => {
+    hasMaterial().then(setMaterial)
+  }, [])
   return (
     <section className="settings" aria-label="Settings">
       <header className="settings-head">
@@ -20,6 +25,12 @@ export function Settings({ section, player, onClose }: { section: 'server' | 'pl
             Player
           </a>
         </nav>
+        {material && (
+          // The way back to Material Skin, which stays at /material/ even when Mixdesk is the home page.
+          <a className="text-btn" href="/material/">
+            Open Material Skin
+          </a>
+        )}
         <button className="text-btn" onClick={onClose}>
           Done <kbd>Esc</kbd>
         </button>

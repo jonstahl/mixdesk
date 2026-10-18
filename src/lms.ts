@@ -334,6 +334,14 @@ export function hasStats(): Promise<boolean> {
   }).catch(() => false)
 }
 
+/** Material Skin lives at /material/ whatever the home page is; it registers a CLI command of its own. */
+export function hasMaterial(): Promise<boolean> {
+  return cached('has material', async () => {
+    const r = await rpc<{ _can?: number }>('', ['can', 'material-skin', '?'])
+    return r._can === 1
+  }).catch(() => false)
+}
+
 /** Fresh-only mixes need statplays, which plugins from before it existed lack. */
 export function hasPlayCounts(): Promise<boolean> {
   return cached('has play counts', async () => {
