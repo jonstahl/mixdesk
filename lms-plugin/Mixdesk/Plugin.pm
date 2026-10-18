@@ -7,6 +7,13 @@ package Plugins::Mixdesk::Plugin;
 # application/octet-stream (which browsers refuse to run), and its download
 # handler marks pages as attachments. Raw handlers run before either.
 #
+# With the "homepage" setting on, the server's own address (/ and /index.html)
+# redirects to /mixdesk/. The other skins stay at /<skin>/, e.g. /material/.
+#
+# A raw handler can't pass a request on, so the handler is only registered
+# while the setting is on and is removed when it's switched off, which takes
+# effect at once with no restart.
+#
 # Everything else the app needs (jsonrpc.js, cover art, the settings pages) is
 # LMS itself, so it's all same-origin.
 #
@@ -21,11 +28,12 @@ use base qw(Slim::Plugin::Base);
 
 use File::Basename qw(dirname);
 use File::Spec::Functions qw(catfile);
-use HTTP::Status qw(RC_OK RC_NOT_FOUND);
+use HTTP::Status qw(RC_OK RC_NOT_FOUND RC_MOVED_TEMPORARILY);
 
 use Slim::Control::Request;
 use Slim::Schema;
 use Slim::Utils::Log;
+use Slim::Utils::Prefs;
 
 use Plugins::Mixdesk::Stats;
 
@@ -34,6 +42,8 @@ my $log = Slim::Utils::Log->addLogCategory({
 	defaultLevel => 'WARN',
 	description  => 'PLUGIN_MIXDESK',
 });
+
+my $prefs = preferences('plugin.mixdesk');
 
 my $htdocs = catfile(dirname(__FILE__), 'HTML', 'EN', 'mixdesk');
 
@@ -64,6 +74,48 @@ sub initPlugin {
 	return unless main::WEBUI;
 
 	Slim::Web::Pages->addRawFunction('^/?mixdesk(?:/|$)', \&_serve);
+
+	require Plugins::Mixdesk::Settings;
+	Plugins::Mixdesk::Settings->new;
+
+	$prefs->init({ homepage => 0 });
+	$prefs->setChange(\&_homepage, 'homepage');
+	_homepage();
+}
+
+# --- Home page -------------------------------------------------------------------
+
+# A qr// rather than a string: Tie::RegexpHash matches a string key against the
+# existing keys, but compares a qr// key by identity, which is also how it's removed.
+my $homeRe = qr{^/?(?:index\.html)?$};
+my $homeOn = 0;
+
+sub _homepage {
+	my $want = $prefs->get('homepage') ? 1 : 0;
+	return if $want == $homeOn;
+
+	if ($want) {
+		Slim::Web::Pages->addRawFunction($homeRe, \&_home);
+	}
+	else {
+		delete $Slim::Web::Pages::rawFunctions{$homeRe};
+	}
+	$homeOn = $want;
+}
+
+sub _home {
+	my ($httpClient, $response) = @_;
+	return unless $httpClient->connected;
+
+	# Temporary, and not cacheable: a browser must never remember this once
+	# the setting is off.
+	my $body = '';
+	$response->code(RC_MOVED_TEMPORARILY);
+	$response->header('Location' => '/mixdesk/');
+	$response->header('Cache-Control' => 'no-store');
+	$response->content_type('text/plain');
+	$response->content_length(0);
+	Slim::Web::HTTP::addHTTPResponse($httpClient, $response, \$body, 1, 0);
 }
 
 # --- Stats queries -------------------------------------------------------------

@@ -1,0 +1,10 @@
+[% PROCESS settings/header.html %]
+
+	[% WRAPPER settingSection %]
+		[% WRAPPER settingGroup title="" desc="PLUGIN_MIXDESK_HOMEPAGE_DESC" %]
+			<input type="checkbox" [% IF prefs.pref_homepage %]checked="1" [% END %]class="stdedit" name="pref_homepage" id="pref_homepage" value="1" />
+			<label for="pref_homepage" class="stdlabel">[% "PLUGIN_MIXDESK_HOMEPAGE" | string %]</label>
+		[% END %]
+	[% END %]
+
+[% PROCESS settings/footer.html %]

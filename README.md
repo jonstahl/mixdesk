@@ -53,6 +53,15 @@ from Google Fonts, and falls back to a system font when offline.
 Use one route or the other. A hand-installed copy and a repository-installed
 one would both be named Mixdesk.
 
+### Making Mixdesk your home page
+
+By default Mixdesk lives at `/mixdesk/` and your server's address still opens
+whichever skin LMS is set to. To open Mixdesk there instead, tick *Use Mixdesk
+as LMS homepage* under *Settings → Plugins → Mixdesk*. It takes effect at once,
+with no restart. Every skin stays at its own address, such as `/material/` for
+Material Skin, and unticking the box puts things back. The option is available
+in all the languages LMS supports.
+
 ## Develop
 
 Needs Node.js 22.12 or later.

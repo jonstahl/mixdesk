@@ -3,3 +3,45 @@ PLUGIN_MIXDESK
 
 PLUGIN_MIXDESK_DESC
 	EN	A web interface built around MusicIP mixes: pick a seed, preview the mix, prune it. Open it at /mixdesk/ on this server.
+
+PLUGIN_MIXDESK_HOMEPAGE
+	CS	Používat Mixdesk jako domovskou stránku LMS
+	DA	Brug Mixdesk som LMS’ startside
+	DE	Mixdesk als LMS-Startseite verwenden
+	EN	Use Mixdesk as LMS homepage
+	EN_GB	Use Mixdesk as LMS homepage
+	ES	Usar Mixdesk como página de inicio de LMS
+	FI	Käytä Mixdeskiä LMS:n etusivuna
+	FR	Utiliser Mixdesk comme page d’accueil de LMS
+	HE	השתמש ב-Mixdesk כדף הבית של LMS
+	HU	Mixdesk használata az LMS kezdőlapjaként
+	IT	Usa Mixdesk come home page di LMS
+	JA	MixdeskをLMSのホームページとして使用する
+	NL	Mixdesk gebruiken als startpagina van LMS
+	NO	Bruk Mixdesk som startside for LMS
+	PL	Używaj Mixdesk jako strony głównej LMS
+	PT	Usar o Mixdesk como página inicial do LMS
+	RU	Использовать Mixdesk как главную страницу LMS
+	SV	Använd Mixdesk som startsida för LMS
+	ZH_CN	将 Mixdesk 用作 LMS 主页
+
+PLUGIN_MIXDESK_HOMEPAGE_DESC
+	CS	Při otevření adresy tohoto serveru zobrazit Mixdesk místo výchozího motivu. Výchozí motiv zůstane dostupný na vlastní adrese, například /material/ pro Material Skin.
+	DA	Åbn Mixdesk i stedet for standardskinnet, når du går til denne servers adresse. Standardskinnet er stadig tilgængeligt på sin egen adresse, f.eks. /material/ for Material Skin.
+	DE	Beim Aufrufen der Adresse dieses Servers Mixdesk statt des Standard-Skins öffnen. Der Standard-Skin bleibt unter seiner eigenen Adresse erreichbar, z. B. /material/ für Material Skin.
+	EN	Open Mixdesk, rather than the default skin, when you go to this server’s address. The default skin stays available at its own address, for example /material/ for Material Skin.
+	EN_GB	Open Mixdesk, rather than the default skin, when you go to this server’s address. The default skin stays available at its own address, for example /material/ for Material Skin.
+	ES	Abre Mixdesk en lugar del skin predeterminado al entrar en la dirección de este servidor. El skin predeterminado sigue disponible en su propia dirección, por ejemplo /material/ para Material Skin.
+	FI	Avaa Mixdesk oletusteeman sijaan, kun siirryt tämän palvelimen osoitteeseen. Oletusteema pysyy käytettävissä omassa osoitteessaan, esimerkiksi /material/ Material Skinille.
+	FR	Ouvre Mixdesk à la place de l’habillage par défaut lorsque vous accédez à l’adresse de ce serveur. L’habillage par défaut reste disponible à sa propre adresse, par exemple /material/ pour Material Skin.
+	HE	פותח את Mixdesk במקום ערכת הנושא המוגדרת כברירת מחדל כשנכנסים לכתובת של שרת זה. ערכת הנושא המוגדרת כברירת מחדל נשארת זמינה בכתובת משלה, למשל /material/ עבור Material Skin.
+	HU	A kiszolgáló címének megnyitásakor az alapértelmezett felület helyett a Mixdesk nyílik meg. Az alapértelmezett felület továbbra is elérhető a saját címén, például a Material Skin a /material/ címen.
+	IT	Apre Mixdesk al posto della skin predefinita quando si va all’indirizzo di questo server. La skin predefinita resta disponibile al proprio indirizzo, ad esempio /material/ per Material Skin.
+	JA	このサーバーのアドレスにアクセスしたとき、デフォルトのスキンではなくMixdeskを開きます。デフォルトのスキンは、それぞれ専用のアドレス（たとえばMaterial Skinなら /material/）で引き続き利用できます。
+	NL	Opent Mixdesk in plaats van de standaardskin wanneer je naar het adres van deze server gaat. De standaardskin blijft bereikbaar op een eigen adres, bijvoorbeeld /material/ voor Material Skin.
+	NO	Åpner Mixdesk i stedet for standardskinnet når du går til denne serverens adresse. Standardskinnet er fortsatt tilgjengelig på sin egen adresse, for eksempel /material/ for Material Skin.
+	PL	Otwiera Mixdesk zamiast domyślnego motywu po wejściu na adres tego serwera. Domyślny motyw pozostaje dostępny pod własnym adresem, na przykład /material/ dla Material Skin.
+	PT	Abre o Mixdesk em vez do tema predefinido ao aceder ao endereço deste servidor. O tema predefinido continua disponível no seu próprio endereço, por exemplo /material/ para o Material Skin.
+	RU	Открывать Mixdesk вместо оформления по умолчанию при переходе по адресу этого сервера. Оформление по умолчанию остаётся доступным по собственному адресу, например /material/ для Material Skin.
+	SV	Öppnar Mixdesk i stället för standardskalet när du går till den här serverns adress. Standardskalet finns kvar på sin egen adress, till exempel /material/ för Material Skin.
+	ZH_CN	访问此服务器的地址时打开 Mixdesk，而不是默认皮肤。默认皮肤仍可通过其自己的地址访问，例如 Material Skin 的地址是 /material/。
