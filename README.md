@@ -17,7 +17,7 @@ its plugins, so it needs:
 | **MusicIP** plugin | Required | Mixdesk asks it for every mix (`musicip mix`) and for the variety setting. Enable it under *Settings → Manage Plugins*, or install it from the plugin list if your LMS doesn't include it. |
 | **MusicIP Mixer** (the MusicIP service) | Required | The plugin is only a bridge. The MusicIP service must be running somewhere LMS can reach, with your library analysed. Tracks it hasn't analysed can be played but not mixed from. |
 | **Material Skin** plugin | Strongly recommended | The Settings view (gear icon) frames LMS's settings pages as Material styles them. Mixdesk also asks for cover art only at the sizes Material makes LMS pre-cache (150, 300, 600px); without Material, LMS resizes covers on request, which stalls the server while it works. |
-| **TrackStat** plugin | Optional | Adds the Stats view (what you've played, and loved tracks you've drifted from) and a star on the now-playing panel that rates the track. Install it from LMS's plugin list and leave its play history on. Without it neither appears. |
+| **TrackStat** plugin | Optional | Adds the Stats view (what you've played, and loved tracks you've drifted from) and a star on the now-playing panel that rates the track. It also powers the *Fresh only* filter on draft mixes. Install it from LMS's plugin list and leave its play history on. Without it none of these appear. |
 | **Don't Stop The Music** plugin | Optional | Bundled with LMS. Not used by Mixdesk directly, but if you set it to MusicIP mixes it keeps the queue going, and the variety slider applies to it too. |
 
 A modern browser (Chrome, Safari, Firefox, Edge). The app loads its typeface
@@ -113,6 +113,12 @@ from that same run:
   touching the queue*. Cut what you don't want, then play it, queue it after
   the current track, or add it to the end. "New mix" asks again; MusicIP mixes
   are random, so each one is different.
+- **Fresh only** (needs TrackStat) hides tracks from a draft that you've played
+  more than a set number of times (2 by default; both the switch and the
+  number are remembered in the browser). Toggling it is instant. If the filter
+  thins a mix out, Mixdesk asks MusicIP for more, up to three extra times. Play
+  counts come from a read-only `mixdesk statplays` query, so after updating the
+  app, restart LMS once.
 - **Stats** (desktop only, needs TrackStat) charts what TrackStat has
   recorded: plays per day over the last year, the artists you play most, tracks
   you rated 4 or 5 stars but haven't played in over a year, and a shuffleable
