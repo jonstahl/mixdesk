@@ -59,6 +59,7 @@ sub initPlugin {
 	Slim::Control::Request::addDispatch(['mixdesk', 'statartists', '_index', '_quantity'], [0, 1, 1, \&_artistsQuery]);
 	Slim::Control::Request::addDispatch(['mixdesk', 'statlapsed', '_index', '_quantity'], [0, 1, 1, \&_lapsedQuery]);
 	Slim::Control::Request::addDispatch(['mixdesk', 'statunplayed', '_quantity'], [0, 1, 1, \&_unplayedQuery]);
+	Slim::Control::Request::addDispatch(['mixdesk', 'statplays'], [0, 1, 1, \&_playsQuery]);
 
 	return unless main::WEBUI;
 
@@ -157,6 +158,25 @@ sub _unplayedQuery {
 	my $i = 0;
 	for my $a (@{ $r->{artists} }) {
 		$request->addResultLoop('artists_loop', $i, $_, $a->{$_}) for keys %$a;
+		$i++;
+	}
+	$request->setStatusDone();
+}
+
+# Play counts for a handful of tracks (track_id:1,2,3), 500 at most. Only
+# tracks that have been played come back.
+sub _playsQuery {
+	my $request = shift;
+	my @ids = split /,/, ($request->getParam('track_id') // '');
+	splice @ids, 500 if @ids > 500;
+	my $r = _stats_query($request, 'statplays', sub {
+		{ plays => Plugins::Mixdesk::Stats::plays(shift, ids => \@ids) };
+	}) or return;
+
+	my $i = 0;
+	for my $id (sort { $a <=> $b } keys %{ $r->{plays} }) {
+		$request->addResultLoop('plays_loop', $i, 'id', $id);
+		$request->addResultLoop('plays_loop', $i, 'plays', $r->{plays}{$id});
 		$i++;
 	}
 	$request->setStatusDone();

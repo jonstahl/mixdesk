@@ -334,6 +334,28 @@ export function hasStats(): Promise<boolean> {
   }).catch(() => false)
 }
 
+/** Fresh-only mixes need statplays, which plugins from before it existed lack. */
+export function hasPlayCounts(): Promise<boolean> {
+  return cached('has play counts', async () => {
+    const [ours, theirs] = await Promise.all([
+      rpc<{ _can?: number }>('', ['can', 'mixdesk', 'statplays', '?']),
+      rpc<{ _can?: number }>('', ['can', 'trackstat', 'getrating', '?']),
+    ])
+    return ours._can === 1 && theirs._can === 1
+  }).catch(() => false)
+}
+
+/** Times each track is in the play history; tracks never played are absent. */
+export async function getPlayCounts(ids: (string | number)[]): Promise<Record<string, number>> {
+  if (!ids.length) return {}
+  const r = await rpc<{ plays_loop?: { id: number | string; plays: number | string }[] }>('', [
+    'mixdesk',
+    'statplays',
+    `track_id:${ids.join(',')}`,
+  ])
+  return Object.fromEntries((r.plays_loop ?? []).map((p) => [String(p.id), Number(p.plays)]))
+}
+
 /** Range in days; 0 is all time. */
 export type StatRange = 30 | 365 | 0
 

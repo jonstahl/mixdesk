@@ -566,6 +566,26 @@ input[type='range'] {
   color: var(--dim);
 }
 
+.fresh {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--dim);
+  cursor: pointer;
+}
+
+.fresh-max input {
+  width: 3.2em;
+  margin: 0 3px;
+  padding: 2px 4px;
+  font: inherit;
+  color: var(--paper);
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+}
+
 .draft .rows {
   flex: 1;
   border-left: 1px dashed var(--accent);

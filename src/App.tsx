@@ -4,7 +4,7 @@ import type { Seed, Track } from './lms'
 import { usePlayer } from './usePlayer'
 import { NowPlaying } from './NowPlaying'
 import { RunningOrder } from './RunningOrder'
-import { Draft, type DraftState } from './Draft'
+import { Draft, shownTracks, type DraftState, type Fresh } from './Draft'
 import { Search } from './Search'
 import { Library } from './Library'
 import { Settings } from './Settings'
@@ -27,6 +27,18 @@ function readSaved(key: string) {
   } catch {
     return null
   }
+}
+
+const FRESH_KEY = 'mixdesk.fresh'
+// Stop after this many extra MusicIP calls to refill a mix the filter thinned out.
+const TOP_UPS = 3
+
+function readFresh(): Fresh {
+  try {
+    const f = JSON.parse(readSaved(FRESH_KEY) ?? '')
+    if (typeof f.on === 'boolean' && Number.isInteger(f.max) && f.max >= 0) return f
+  } catch {}
+  return { on: false, max: 2 }
 }
 
 export default function App() {
@@ -72,6 +84,22 @@ export default function App() {
   const [draftSel, setDraftSel] = useState(0)
   const [cursorOn, setCursorOn] = useState(false)
   const [variety, setVarietyState] = useState(6)
+  const [fresh, setFreshState] = useState(readFresh)
+  const freshRef = useRef(fresh)
+  useEffect(() => {
+    freshRef.current = fresh
+  }, [fresh])
+  const [canCount, setCanCount] = useState(false)
+  useEffect(() => {
+    lms.hasPlayCounts().then(setCanCount)
+  }, [])
+  const setFresh = (f: Fresh) => {
+    setFreshState(f)
+    try {
+      localStorage.setItem(FRESH_KEY, JSON.stringify(f))
+    } catch {}
+  }
+  const shown = draft ? shownTracks(draft, fresh) : []
   const [searching, setSearchingState] = useState(false)
   const [initialTerm, setInitialTerm] = useState('')
   // Updated synchronously: keys typed before the search box renders and takes
@@ -230,13 +258,27 @@ export default function App() {
       setDraftSel(0)
       setDraft((d) => ({ seed, tracks: d && d.seed === seed ? d.tracks : [], loading: true }))
       try {
-        const mix = await lms.previewMix(player, seed)
-        setDraft({ seed, tracks: mix, loading: false, empty: !mix.length })
+        let mix = await lms.previewMix(player, seed)
+        // Play counts are fetched even with the filter off, so turning it on is instant.
+        let plays = canCount ? await lms.getPlayCounts(mix.map((t) => t.id)).catch(() => undefined) : undefined
+        if (plays && freshRef.current.on) {
+          // The filter thins the mix, so ask again for more, up to a few times.
+          const want = mix.length
+          for (let n = 0; n < TOP_UPS; n++) {
+            if (shownTracks({ seed, tracks: mix, plays, loading: false }, freshRef.current).length >= want) break
+            const have = new Set(mix.map((t) => String(t.id)))
+            const more = (await lms.previewMix(player, seed)).filter((t) => !have.has(String(t.id)))
+            if (!more.length) break
+            mix = [...mix, ...more]
+            plays = { ...plays, ...(await lms.getPlayCounts(more.map((t) => t.id))) }
+          }
+        }
+        setDraft({ seed, tracks: mix, plays, loading: false, empty: !mix.length })
       } catch (e) {
         setDraft({ seed, tracks: [], loading: false, error: e instanceof Error ? e.message : String(e) })
       }
     },
-    [player],
+    [player, canCount],
   )
 
   // Mix buttons are hidden for unanalysed tracks; this covers the M key.
@@ -257,7 +299,7 @@ export default function App() {
 
   const commitDraft = (mode: lms.AddMode) => {
     if (!player || !draft) return
-    const ids = draft.tracks.map((t) => t.id)
+    const ids = shown.map((t) => t.id)
     const restore = mode === 'load' ? snapshot() : undefined
     enqueue(() => lms.addTracks(player, ids, mode))
     setDraft(null)
@@ -270,8 +312,10 @@ export default function App() {
   const cutDraft = (i: number) =>
     setDraft((d) => {
       if (!d) return d
-      const next = d.tracks.filter((_, k) => k !== i)
-      setDraftSel((s) => Math.max(0, Math.min(s, next.length - 1)))
+      // The index is into what's listed, which the filter may have thinned.
+      const gone = shownTracks(d, fresh)[i]
+      const next = d.tracks.filter((t) => t !== gone)
+      setDraftSel((s) => Math.max(0, Math.min(s, shownTracks({ ...d, tracks: next }, fresh).length - 1)))
       return { ...d, tracks: next }
     })
 
@@ -347,7 +391,7 @@ export default function App() {
     // The first move only reveals the cursor, so you see where it is before it goes anywhere.
     const reveal = (down || up) && !cursorOn
     if (draft) {
-      const n = draft.tracks.length
+      const n = shown.length
       // In a draft a hidden cursor sits on the seed, so cutting needs it visible first.
       if (down || up || cutKey) {
         if (!reveal && cursorOn) {
@@ -469,6 +513,8 @@ export default function App() {
         {draft ? (
           <Draft
             draft={draft}
+            tracks={shown}
+            fresh={fresh}
             variety={variety}
             selected={cursorOn ? draftSel : -1}
             onSelect={(i) => {
@@ -478,6 +524,7 @@ export default function App() {
             onCut={cutDraft}
             onReroll={() => startDraft(draft.seed)}
             onVariety={changeVariety}
+            onFresh={setFresh}
             onCommit={commitDraft}
             onDiscard={() => setDraft(null)}
           />

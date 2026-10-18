@@ -241,4 +241,27 @@ sub unplayed {
 	};
 }
 
+=head2 plays($dbh, ids => [TRACK_ID, ...])
+
+How many times each of the given tracks appears in the play history, as a
+hash of track id to count. Tracks that were never played are left out.
+
+=cut
+
+sub plays {
+	my ($dbh, %o) = @_;
+	my @ids = grep { /^\d+$/ } @{ $o{ids} || [] };
+	return {} unless @ids;
+
+	my $in = join ',', map { int } @ids;
+	my $rows = $dbh->selectall_arrayref(
+		"SELECT t.id, COUNT(*)
+		   FROM tracks t JOIN persistentdb.track_history h ON h.url = t.url
+		  WHERE t.id IN ($in) AND h.played > 0
+		  GROUP BY t.id"
+	);
+
+	return { map { $_->[0] => $_->[1] } @$rows };
+}
+
 1;
