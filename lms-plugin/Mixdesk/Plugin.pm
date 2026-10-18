@@ -8,7 +8,9 @@ package Plugins::Mixdesk::Plugin;
 # handler marks pages as attachments. Raw handlers run before either.
 #
 # With the "homepage" setting on, the server's own address (/ and /index.html)
-# redirects to /mixdesk/. The other skins stay at /<skin>/, e.g. /material/.
+# serves the app too, in place of the default skin's home page. The app finds
+# its files at absolute /mixdesk/ paths and routes on the URL hash, so it runs
+# the same from either address. The other skins stay at /<skin>/, e.g. /material/.
 #
 # A raw handler can't pass a request on, so the handler is only registered
 # while the setting is on and is removed when it's switched off, which takes
@@ -28,7 +30,7 @@ use base qw(Slim::Plugin::Base);
 
 use File::Basename qw(dirname);
 use File::Spec::Functions qw(catfile);
-use HTTP::Status qw(RC_OK RC_NOT_FOUND RC_MOVED_TEMPORARILY);
+use HTTP::Status qw(RC_OK RC_NOT_FOUND);
 
 use Slim::Control::Request;
 use Slim::Schema;
@@ -105,17 +107,7 @@ sub _homepage {
 
 sub _home {
 	my ($httpClient, $response) = @_;
-	return unless $httpClient->connected;
-
-	# Temporary, and not cacheable: a browser must never remember this once
-	# the setting is off.
-	my $body = '';
-	$response->code(RC_MOVED_TEMPORARILY);
-	$response->header('Location' => '/mixdesk/');
-	$response->header('Cache-Control' => 'no-store');
-	$response->content_type('text/plain');
-	$response->content_length(0);
-	Slim::Web::HTTP::addHTTPResponse($httpClient, $response, \$body, 1, 0);
+	_send($httpClient, $response, 'index.html');
 }
 
 # --- Stats queries -------------------------------------------------------------
@@ -259,9 +251,13 @@ sub _lapsedQuery {
 
 sub _serve {
 	my ($httpClient, $response) = @_;
+	_send($httpClient, $response, _relative($response->request->uri->path));
+}
+
+sub _send {
+	my ($httpClient, $response, $rel) = @_;
 	return unless $httpClient->connected;
 
-	my $rel  = _relative($response->request->uri->path);
 	my $file = _file($rel);
 	my $body = $file && _read($file);
 
