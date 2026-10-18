@@ -256,7 +256,7 @@ export default function App() {
       if (!player) return
       setSearching(false)
       setDraftSel(0)
-      setDraft((d) => ({ seed, tracks: d && d.seed === seed ? d.tracks : [], loading: true }))
+      setDraft((d) => (d && d.seed === seed ? { ...d, loading: true } : { seed, tracks: [], loading: true }))
       try {
         let mix = await lms.previewMix(player, seed)
         // Play counts are fetched even with the filter off, so turning it on is instant.
@@ -515,6 +515,7 @@ export default function App() {
             draft={draft}
             tracks={shown}
             fresh={fresh}
+            canFresh={canCount}
             variety={variety}
             selected={cursorOn ? draftSel : -1}
             onSelect={(i) => {

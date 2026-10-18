@@ -29,6 +29,8 @@ export function Draft(props: {
   /** The tracks to list: the draft's, less any the fresh-only filter hides. */
   tracks: Track[]
   fresh: Fresh
+  /** Whether the server can count plays; the control is shown for as long as it can. */
+  canFresh: boolean
   variety: number
   selected: number
   onSelect: (i: number) => void
@@ -56,7 +58,7 @@ export function Draft(props: {
           </p>
         </div>
         <div className="draft-tune">
-          {draft.plays && (
+          {props.canFresh && (
             <label className="fresh" title="Leave out tracks you've played more than this many times">
               <input type="checkbox" checked={props.fresh.on} onChange={(e) => props.onFresh({ ...props.fresh, on: e.target.checked })} />
               <span>Fresh only</span>
