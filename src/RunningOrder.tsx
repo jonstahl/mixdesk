@@ -80,8 +80,8 @@ export function RunningOrder(props: {
   const upcoming = tracks.slice(currentIndex + 1)
 
   const actionsFor = (i: number, tr: Track): RowAction[] => [
-    { icon: 'playNext', label: 'Play next', key: 'N', run: () => props.onPlayNext(i) },
     ...(isMixable(tr) ? [{ icon: 'mix', label: 'Mix from this', key: 'M', run: () => props.onMix(tr) } as RowAction] : []),
+    { icon: 'playNext', label: 'Play next', key: 'N', run: () => props.onPlayNext(i) },
     { icon: 'cut', label: 'Cut', key: 'X', run: () => props.onCut(i), danger: true },
   ]
   const row = (tr: Track, i: number, extra: Partial<Parameters<typeof TrackRow>[0]> = {}) => (
