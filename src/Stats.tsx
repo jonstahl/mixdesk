@@ -39,9 +39,11 @@ function readRange(): StatRange {
 type Props = {
   onMix: (seed: Seed) => void
   onTrack: (track: Track, mode: 'insert' | 'add') => void
+  /** Changes when the playing track does, so the figures catch up with the play just recorded. */
+  playing?: string | number
 }
 
-export function Stats({ onMix, onTrack }: Props) {
+export function Stats({ onMix, onTrack, playing }: Props) {
   const [range, setRangeState] = useState<StatRange>(readRange)
   const setRange = (r: StatRange) => {
     setRangeState(r)
@@ -51,7 +53,7 @@ export function Stats({ onMix, onTrack }: Props) {
       /* private window: fine to forget */
     }
   }
-  const stats = useLoad(() => lms.getStats(range), [range])
+  const stats = useLoad(() => lms.getStats(range), [range, playing])
   const [now] = useState(() => Date.now() / 1000)
   const phrase = RANGES.find((r) => r.days === range)!.phrase
   const s = stats.data
@@ -79,8 +81,8 @@ export function Stats({ onMix, onTrack }: Props) {
         <>
           <Tiles s={s} range={range} now={now} />
           <Calendar s={s} now={now} />
-          <Artists key={range} range={range} phrase={phrase} onMix={onMix} />
-          <Lapsed now={now} onMix={onMix} onTrack={onTrack} />
+          <Artists key={range} range={range} phrase={phrase} playing={playing} onMix={onMix} />
+          <Lapsed now={now} playing={playing} onMix={onMix} onTrack={onTrack} />
           <Unplayed onMix={onMix} />
         </>
       )}
@@ -247,9 +249,9 @@ function Pager({ page, size, total, onPage }: { page: number; size: number; tota
 
 // --- artists -------------------------------------------------------------------------
 
-function Artists({ range, phrase, onMix }: { range: StatRange; phrase: string; onMix: (seed: Seed) => void }) {
+function Artists({ range, phrase, playing, onMix }: { range: StatRange; phrase: string; playing: Props['playing']; onMix: (seed: Seed) => void }) {
   const [page, setPage] = useState(0)
-  const list = useLoad(() => lms.getStatArtists(range, page * ARTIST_PAGE, ARTIST_PAGE), [range, page])
+  const list = useLoad(() => lms.getStatArtists(range, page * ARTIST_PAGE, ARTIST_PAGE), [range, page, playing])
   // Bars are measured against the top artist, who is only on the first page,
   // so that page's figure is kept for the others.
   const [top, setTop] = useState(0)
@@ -303,9 +305,9 @@ function Artists({ range, phrase, onMix }: { range: StatRange; phrase: string; o
 
 const YEAR = 365.25 * DAY
 
-function Lapsed({ now, onMix, onTrack }: Pick<Props, 'onMix' | 'onTrack'> & { now: number }) {
+function Lapsed({ now, playing, onMix, onTrack }: Pick<Props, 'onMix' | 'onTrack' | 'playing'> & { now: number }) {
   const [page, setPage] = useState(0)
-  const list = useLoad(() => lms.getLapsed(page * LAPSED_PAGE, LAPSED_PAGE), [page])
+  const list = useLoad(() => lms.getLapsed(page * LAPSED_PAGE, LAPSED_PAGE), [page, playing])
   const items = list.data?.tracks ?? []
 
   const actions = (t: LapsedTrack): RowAction[] => [

@@ -532,7 +532,7 @@ export default function App() {
         ) : route.page === 'settings' ? (
           <Settings section={route.section} player={player} onClose={closeSettings} />
         ) : onStats ? (
-          statsOn ? <Stats onMix={startDraft} onTrack={addTrack} /> : null
+          statsOn ? <Stats onMix={startDraft} onTrack={addTrack} playing={current?.id} /> : null
         ) : !onQueue ? (
           <Library route={route} onMix={startDraft} onAlbum={addAlbum} onTrack={addTrack} />
         ) : (
