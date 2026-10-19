@@ -1,6 +1,6 @@
 import type { Seed, Track } from './lms'
 import { TrackRow } from './RunningOrder'
-import { fmtDuration, Icon } from './ui'
+import { Icon } from './ui'
 
 export type DraftState = {
   seed: Seed
@@ -15,6 +15,10 @@ export type DraftState = {
 
 /** Fresh-only: leave out tracks played more than `max` times. */
 export type Fresh = { on: boolean; max: number }
+
+const FRESH_PRESETS = [0, 2, 5]
+/** The preset thresholds, plus a saved one that isn't among them so it stays visible. */
+const freshChoices = (max: number) => (FRESH_PRESETS.includes(max) ? FRESH_PRESETS : [...FRESH_PRESETS, max].sort((a, b) => a - b))
 
 /** The seed track stays whatever its play count: it's what the mix is built from. */
 export function shownTracks(draft: DraftState, fresh: Fresh): Track[] {
@@ -43,40 +47,29 @@ export function Draft(props: {
 }) {
   const { draft, tracks } = props
   const hidden = draft.tracks.length - tracks.length
-  const total = tracks.reduce((s, t) => s + (t.duration ?? 0), 0)
   return (
     <section className="draft" aria-label="Proposed mix">
       <header className="draft-head">
         <div>
           <h2 className="draft-title">Mix from {draft.seed.label}</h2>
-          <p className="draft-meta">
-            {draft.loading
-              ? 'Asking MusicIP…'
-              : tracks.length
-                ? `${tracks.length} tracks, ${fmtDuration(total)}. ${hidden ? `${hidden} hidden, played more than ${props.fresh.max} ${props.fresh.max === 1 ? 'time' : 'times'}. ` : ''}Cut what you don't want, then play it.`
-                : 'No mix'}
-          </p>
+          {(draft.loading || !tracks.length) && <p className="draft-meta">{draft.loading ? 'Asking MusicIP…' : 'No mix'}</p>}
         </div>
         <div className="draft-tune">
           {props.canFresh && (
-            <label className="fresh" title="Leave out tracks you've played more than this many times">
-              <input type="checkbox" checked={props.fresh.on} onChange={(e) => props.onFresh({ ...props.fresh, on: e.target.checked })} />
+            <div className="fresh" role="group" aria-label="Leave out tracks you've played">
               <span>Fresh only</span>
-              {props.fresh.on && (
-                <span className="fresh-max">
-                  ≤
-                  <input
-                    type="number"
-                    min={0}
-                    max={99}
-                    value={props.fresh.max}
-                    onChange={(e) => props.onFresh({ ...props.fresh, max: Math.max(0, Math.min(99, Math.floor(Number(e.target.value)) || 0)) })}
-                    aria-label="Most plays a track can have"
-                  />
-                  ×
-                </span>
-              )}
-            </label>
+              <div className="segmented">
+                <button aria-pressed={!props.fresh.on} onClick={() => props.onFresh({ ...props.fresh, on: false })}>
+                  Any
+                </button>
+                {freshChoices(props.fresh.max).map((max) => (
+                  <button key={max} aria-pressed={props.fresh.on && props.fresh.max === max} onClick={() => props.onFresh({ on: true, max })}>
+                    {max === 0 ? 'Never played' : `≤ ${max}`}
+                  </button>
+                ))}
+              </div>
+              {props.fresh.on && hidden > 0 && <span className="fresh-hidden">{hidden} hidden</span>}
+            </div>
           )}
           <label className="variety">
             <span>Closer</span>
