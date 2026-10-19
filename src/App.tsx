@@ -19,7 +19,7 @@ const PLAYER_KEY = 'mixdesk.player'
 const LEAVE_MS = 160
 const CURSOR_IDLE_MS = 4000
 
-type Toast = { text: string; undo?: () => void }
+type Toast = { text: string; undo?: () => void; ms?: number }
 
 function readSaved(key: string) {
   try {
@@ -201,7 +201,7 @@ export default function App() {
 
   useEffect(() => {
     if (!toast) return
-    const id = setTimeout(() => setToast(null), 6000)
+    const id = setTimeout(() => setToast(null), toast.ms ?? 6000)
     return () => clearTimeout(id)
   }, [toast])
 
@@ -219,7 +219,8 @@ export default function App() {
           return n
         }),
       )
-      setToast({ text: `Cut “${tr.title}”`, undo: () => enqueue(() => lms.restoreAt(player, tr.id, i)) })
+      // On a narrow screen the toast takes too much room for a routine cut.
+      if (wide) setToast({ text: `Cut “${tr.title}”`, undo: () => enqueue(() => lms.restoreAt(player, tr.id, i)), ms: 4000 })
     }, LEAVE_MS)
   }
 
