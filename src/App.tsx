@@ -29,17 +29,10 @@ function readSaved(key: string) {
   }
 }
 
-const FRESH_KEY = 'mixdesk.fresh'
+// Every new mix starts here, whatever the last one was set to.
+const FRESH_DEFAULT: Fresh = { on: true, max: 2 }
 // Stop after this many extra MusicIP calls to refill a mix the filter thinned out.
 const TOP_UPS = 3
-
-function readFresh(): Fresh {
-  try {
-    const f = JSON.parse(readSaved(FRESH_KEY) ?? '')
-    if (typeof f.on === 'boolean' && Number.isInteger(f.max) && f.max >= 0) return f
-  } catch {}
-  return { on: false, max: 2 }
-}
 
 export default function App() {
   const route = useRoute()
@@ -84,21 +77,19 @@ export default function App() {
   const [draftSel, setDraftSel] = useState(0)
   const [cursorOn, setCursorOn] = useState(false)
   const [variety, setVarietyState] = useState(6)
-  const [fresh, setFreshState] = useState(readFresh)
+  const [fresh, setFresh] = useState(FRESH_DEFAULT)
   const freshRef = useRef(fresh)
   useEffect(() => {
     freshRef.current = fresh
   }, [fresh])
+  const draftSeed = useRef<Seed | null>(null)
+  useEffect(() => {
+    draftSeed.current = draft?.seed ?? null
+  }, [draft])
   const [canCount, setCanCount] = useState(false)
   useEffect(() => {
     lms.hasPlayCounts().then(setCanCount)
   }, [])
-  const setFresh = (f: Fresh) => {
-    setFreshState(f)
-    try {
-      localStorage.setItem(FRESH_KEY, JSON.stringify(f))
-    } catch {}
-  }
   const shown = draft ? shownTracks(draft, fresh) : []
   const [searching, setSearchingState] = useState(false)
   const [initialTerm, setInitialTerm] = useState('')
@@ -257,6 +248,11 @@ export default function App() {
       if (!player) return
       setSearching(false)
       setDraftSel(0)
+      // Rerolls keep the Fresh only choice; a new seed resets it.
+      if (seed !== draftSeed.current) {
+        freshRef.current = FRESH_DEFAULT
+        setFresh(FRESH_DEFAULT)
+      }
       setDraft((d) => (d && d.seed === seed ? { ...d, loading: true } : { seed, tracks: [], loading: true }))
       try {
         let mix = await lms.previewMix(player, seed)

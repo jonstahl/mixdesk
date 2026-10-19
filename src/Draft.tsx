@@ -17,8 +17,6 @@ export type DraftState = {
 export type Fresh = { on: boolean; max: number }
 
 const FRESH_PRESETS = [0, 2, 5]
-/** The preset thresholds, plus a saved one that isn't among them so it stays visible. */
-const freshChoices = (max: number) => (FRESH_PRESETS.includes(max) ? FRESH_PRESETS : [...FRESH_PRESETS, max].sort((a, b) => a - b))
 
 /** The seed track stays whatever its play count: it's what the mix is built from. */
 export function shownTracks(draft: DraftState, fresh: Fresh): Track[] {
@@ -63,7 +61,7 @@ export function Draft(props: {
                 <button aria-pressed={!props.fresh.on} onClick={() => props.onFresh({ ...props.fresh, on: false })}>
                   Any
                 </button>
-                {freshChoices(props.fresh.max).map((max) => (
+                {FRESH_PRESETS.map((max) => (
                   <button key={max} aria-pressed={props.fresh.on && props.fresh.max === max} onClick={() => props.onFresh({ on: true, max })}>
                     {max === 0 ? 'Never played' : `≤ ${max}`}
                   </button>
