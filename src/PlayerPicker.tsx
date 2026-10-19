@@ -6,10 +6,12 @@ export function PlayerPicker({
   players,
   value,
   onChange,
+  onMove,
 }: {
   players: Player[]
   value: string | null
   onChange: (id: string) => void
+  onMove?: (to: Player) => void
 }) {
   const [open, setOpen] = useState(false)
   const root = useRef<HTMLDivElement>(null)
@@ -60,6 +62,23 @@ export function PlayerPicker({
               </button>
             </li>
           ))}
+          {onMove &&
+            players
+              .filter((p) => p.playerid !== current?.playerid)
+              .map((p) => (
+                <li key={`move-${p.playerid}`} role="presentation" className="player-move">
+                  <button
+                    type="button"
+                    role="menuitem"
+                    onClick={() => {
+                      onMove(p)
+                      setOpen(false)
+                    }}
+                  >
+                    Move playback to {p.name}
+                  </button>
+                </li>
+              ))}
         </ul>
       )}
     </div>

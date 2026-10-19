@@ -463,7 +463,17 @@ export default function App() {
         </button>
         <div className="topbar-player">
           {players.length > 1 ? (
-            <PlayerPicker players={players} value={player} onChange={setPlayer} />
+            <PlayerPicker
+              players={players}
+              value={player}
+              onChange={setPlayer}
+              onMove={(to) => {
+                if (!player) return
+                enqueue(() => lms.moveTo(player, to.playerid))
+                setPlayer(to.playerid)
+                setToast({ text: `Moved playback to ${to.name}` })
+              }}
+            />
           ) : (
             <span className="player-name">{players[0]?.name}</span>
           )}

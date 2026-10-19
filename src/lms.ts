@@ -124,6 +124,13 @@ export const next = (p: string) => rpc(p, ['playlist', 'index', '+1'])
 export const prev = (p: string) => rpc(p, ['playlist', 'index', '-1'])
 export const jumpTo = (p: string, i: number) => rpc(p, ['playlist', 'index', i])
 export const seek = (p: string, secs: number) => rpc(p, ['time', secs])
+// Walk With Me syncs the two players, then unsyncs the source, which leaves
+// the queue and position playing on the destination.
+// The source keeps playing on its own afterwards, so it is stopped.
+export async function moveTo(from: string, to: string) {
+  await rpc(from, ['walkwithme', `move:${to}`])
+  await rpc(from, ['stop'])
+}
 export const setVolume = (p: string, v: number) => rpc(p, ['mixer', 'volume', Math.round(v)])
 
 // --- queue editing ---------------------------------------------------------

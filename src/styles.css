@@ -214,6 +214,16 @@ a {
   text-overflow: ellipsis;
 }
 
+.player-move {
+  margin-top: 4px;
+  padding-top: 4px;
+  border-top: 1px solid var(--line);
+}
+
+.player-move button {
+  color: var(--dim);
+}
+
 .player-menu button:hover {
   background: var(--deck-hi);
 }
