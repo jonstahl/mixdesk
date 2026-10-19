@@ -574,6 +574,12 @@ input[type='range'] {
   color: var(--dim);
 }
 
+.fresh-hidden {
+  /* Always takes its room, so the controls beside it don't shift as the count comes and goes. */
+  min-width: 5.5em;
+  font-variant-numeric: tabular-nums;
+}
+
 .fresh .segmented button {
   padding: 3px 9px;
   font-size: 13px;

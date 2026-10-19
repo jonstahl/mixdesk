@@ -47,12 +47,13 @@ export function Draft(props: {
 }) {
   const { draft, tracks } = props
   const hidden = draft.tracks.length - tracks.length
+  const shownHidden = props.fresh.on && hidden > 0
   return (
     <section className="draft" aria-label="Proposed mix">
       <header className="draft-head">
         <div>
           <h2 className="draft-title">Mix from {draft.seed.label}</h2>
-          {(draft.loading || !tracks.length) && <p className="draft-meta">{draft.loading ? 'Asking MusicIP…' : 'No mix'}</p>}
+          <p className="draft-meta">{draft.loading ? 'Asking MusicIP…' : tracks.length ? '\u00a0' : 'No mix'}</p>
         </div>
         <div className="draft-tune">
           {props.canFresh && (
@@ -68,7 +69,9 @@ export function Draft(props: {
                   </button>
                 ))}
               </div>
-              {props.fresh.on && hidden > 0 && <span className="fresh-hidden">{hidden} hidden</span>}
+              <span className="fresh-hidden" aria-hidden={!shownHidden}>
+                {shownHidden ? `${hidden} hidden` : ''}
+              </span>
             </div>
           )}
           <label className="variety">
