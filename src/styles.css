@@ -322,6 +322,7 @@ input[type='range'] {
 }
 
 .transport-mix {
+  border: 1px solid var(--line);
   white-space: nowrap;
 }
 
