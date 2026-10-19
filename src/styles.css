@@ -1413,7 +1413,18 @@ input[type='range'] {
     gap: 12px;
   }
 
-  .player-picker,
+  .player-picker {
+    min-width: 0;
+    max-width: 40%;
+  }
+
+  .player-menu {
+    left: auto;
+    right: 0;
+    width: max-content;
+    max-width: min(280px, calc(100vw - 2 * var(--gutter)));
+  }
+
   .player-name {
     min-width: 0;
     max-width: 40%;
