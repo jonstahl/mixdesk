@@ -143,16 +143,84 @@ a {
 }
 
 .player-name,
-.topbar-player select {
+.player-trigger {
   font-weight: 600;
   font-variation-settings: 'wdth' 85;
 }
 
-.topbar-player select {
+.player-picker {
+  position: relative;
+  min-width: 0;
+}
+
+.player-trigger {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 100%;
   background: var(--deck);
   border: 1px solid var(--line);
   border-radius: 6px;
-  padding: 4px 8px;
+  padding: 4px 8px 4px 10px;
+}
+
+.player-trigger span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.player-trigger:hover,
+.player-trigger[aria-expanded='true'] {
+  border-color: var(--faint);
+}
+
+.player-caret {
+  flex: none;
+  color: var(--dim);
+  transform: rotate(90deg);
+  transition: transform 0.15s;
+}
+
+.player-trigger[aria-expanded='true'] .player-caret {
+  transform: rotate(-90deg);
+}
+
+.player-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 20;
+  min-width: 100%;
+  max-width: 280px;
+  margin: 0;
+  padding: 4px;
+  list-style: none;
+  background: var(--deck);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.4);
+}
+
+.player-menu button {
+  display: block;
+  width: 100%;
+  padding: 7px 10px;
+  border-radius: 5px;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.player-menu button:hover {
+  background: var(--deck-hi);
+}
+
+.player-menu button[aria-selected='true'] {
+  color: var(--accent);
+  font-weight: 600;
 }
 
 .volume {
@@ -1335,7 +1403,7 @@ input[type='range'] {
     gap: 12px;
   }
 
-  .topbar-player select,
+  .player-picker,
   .player-name {
     min-width: 0;
     max-width: 40%;
@@ -1421,7 +1489,7 @@ input[type='range'] {
     flex: none;
   }
 
-  .topbar-player select,
+  .player-picker,
   .player-name {
     max-width: none;
   }

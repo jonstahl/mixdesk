@@ -14,6 +14,7 @@ import { go, href, useRoute, type Route } from './router'
 import { accentFromCover } from './palette'
 import { Icon } from './ui'
 import { VolumeControl } from './VolumeControl'
+import { PlayerPicker } from './PlayerPicker'
 
 const PLAYER_KEY = 'mixdesk.player'
 const LEAVE_MS = 160
@@ -462,13 +463,7 @@ export default function App() {
         </button>
         <div className="topbar-player">
           {players.length > 1 ? (
-            <select value={player ?? ''} onChange={(e) => setPlayer(e.target.value)} aria-label="Player">
-              {players.map((p) => (
-                <option key={p.playerid} value={p.playerid}>
-                  {p.name}
-                </option>
-              ))}
-            </select>
+            <PlayerPicker players={players} value={player} onChange={setPlayer} />
           ) : (
             <span className="player-name">{players[0]?.name}</span>
           )}
