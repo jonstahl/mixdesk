@@ -13,6 +13,8 @@ export function NowPlaying(props: {
   onPrev: () => void
   onNext: () => void
   onSeek: (secs: number) => void
+  /** The bar ran out: ask LMS now instead of waiting for the next poll. */
+  onEnded: () => void
   onMix: (t: Track) => void
   player: string | null
   onError: (text: string) => void
@@ -28,8 +30,8 @@ export function NowPlaying(props: {
   const playing = status?.mode === 'play'
   return (
     <section className="now" aria-label="Now playing">
-      <Cover className="now-cover" src={coverUrl(track.coverid, 600)} name={track.album ?? track.title} full />
-      <div className="now-text">
+      <Cover key={`cover-${track.id}`} className="now-cover" src={coverUrl(track.coverid, 600)} name={track.album ?? track.title} full />
+      <div className="now-text" key={`text-${track.id}`}>
         <h1 className="now-title">{track.title}</h1>
         <p className="now-artist">
           {track.artist_id ? <a href={href({ page: 'artist', id: track.artist_id, name: track.artist ?? '' })}>{track.artist}</a> : track.artist}
@@ -39,7 +41,7 @@ export function NowPlaying(props: {
           {track.year && track.year !== '0' ? <span className="now-year">{track.year}</span> : null}
         </p>
       </div>
-      <Progress duration={status?.duration ?? track.duration} playing={playing} clock={props.clock} onSeek={props.onSeek} />
+      <Progress duration={status?.duration ?? track.duration} playing={playing} clock={props.clock} onSeek={props.onSeek} onEnded={props.onEnded} />
       <div className="transport">
         <button className="icon-btn" onClick={props.onPrev} aria-label="Previous track">
           <Icon name="prev" size={26} />
@@ -130,19 +132,28 @@ function Rate({ track, player, onError }: { track: Track; player: string | null;
   )
 }
 
-function Progress({ duration, playing, clock, onSeek }: { duration?: number; playing: boolean; clock: Clock; onSeek: (s: number) => void }) {
+function Progress({ duration, playing, clock, onSeek, onEnded }: { duration?: number; playing: boolean; clock: Clock; onSeek: (s: number) => void; onEnded: () => void }) {
   const fill = useRef<HTMLDivElement>(null)
   const label = useRef<HTMLSpanElement>(null)
+  const ended = useRef(onEnded)
+  useEffect(() => {
+    ended.current = onEnded
+  })
 
   // Drive the bar straight from the DOM so the rest of the app doesn't re-render every frame.
   useEffect(() => {
     let raf = 0
+    let fired = false
     const tick = () => {
       const { at, time } = clock.current
       const t = playing ? time + (performance.now() - at) / 1000 : time
       const pct = duration ? Math.min(100, (t / duration) * 100) : 0
       if (fill.current) fill.current.style.width = `${pct}%`
       if (label.current) label.current.textContent = fmtDuration(Math.min(t, duration ?? t))
+      if (playing && duration && !fired && t >= duration) {
+        fired = true
+        ended.current()
+      }
       raf = requestAnimationFrame(tick)
     }
     raf = requestAnimationFrame(tick)

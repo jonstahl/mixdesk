@@ -499,6 +499,7 @@ input[type='range'] {
   border-radius: 8px;
   cursor: default;
   overflow: hidden;
+  transition: height 0.25s ease, grid-template-columns 0.25s ease;
 }
 
 .row:hover {
@@ -516,6 +517,7 @@ input[type='range'] {
   border-radius: 3px;
   object-fit: cover;
   background: var(--deck);
+  transition: width 0.25s ease, height 0.25s ease;
 }
 
 .row-main,
@@ -593,6 +595,29 @@ input[type='range'] {
 
 .row.is-leaving {
   animation: leave 160ms ease-in forwards;
+}
+
+.row.is-exiting {
+  animation: exit 300ms ease-in forwards;
+  pointer-events: none;
+}
+
+@keyframes exit {
+  to {
+    height: 0;
+    opacity: 0;
+  }
+}
+
+.now-cover,
+.now-text {
+  animation: track-in 300ms ease-out;
+}
+
+@keyframes track-in {
+  from {
+    opacity: 0;
+  }
 }
 
 @keyframes leave {
@@ -1478,6 +1503,16 @@ input[type='range'] {
     width: auto;
   }
 
+  .row {
+    grid-template-columns: 40px minmax(0, 1fr) auto 40px;
+    gap: 10px;
+  }
+
+  /* The header already shows the current track. */
+  .row.is-current {
+    display: none;
+  }
+
   .row-actions {
     opacity: 1;
   }
@@ -1558,6 +1593,15 @@ input[type='range'] {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .row.is-exiting {
+    display: none;
+  }
+
+  .now-cover,
+  .now-text {
+    animation: none;
+  }
+
   .row.is-leaving {
     animation: none;
     opacity: 0;

@@ -508,6 +508,7 @@ export default function App() {
           onPrev={() => player && enqueue(() => lms.prev(player))}
           onNext={() => player && enqueue(() => lms.next(player))}
           onSeek={(s) => player && lms.seek(player, s).then(refresh)}
+          onEnded={refresh}
           onMix={mixFrom}
           player={player}
           onError={(text) => setToast({ text })}
