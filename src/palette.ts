@@ -65,3 +65,52 @@ function rgbToHsl(r: number, g: number, b: number): [number, number, number] {
     max === r ? ((g - b) / d + (g < b ? 6 : 0)) / 6 : max === g ? ((b - r) / d + 2) / 6 : ((r - g) / d + 4) / 6
   return [h, s, l]
 }
+
+export type Rgb = [number, number, number]
+
+const paletteCache = new Map<string, Rgb[]>()
+
+/**
+ * Up to three distinct colours from a cover, as 0-1 RGB, for the WebGL
+ * backdrop. Same hue bucketing as accentFromCover, but it keeps the runners-up
+ * too. Empty when the cover is missing or has nothing but greys.
+ */
+export async function paletteFromCover(url: string): Promise<Rgb[]> {
+  if (!url) return []
+  const hit = paletteCache.get(url)
+  if (hit) return hit
+  const img = new Image()
+  img.src = url.replace(/cover_\d+x\d+/, 'cover_64x64')
+  try {
+    await img.decode()
+  } catch {
+    return []
+  }
+  const size = 32
+  const canvas = document.createElement('canvas')
+  canvas.width = canvas.height = size
+  const ctx = canvas.getContext('2d', { willReadFrequently: true })!
+  ctx.drawImage(img, 0, 0, size, size)
+  const data = ctx.getImageData(0, 0, size, size).data
+
+  const buckets = new Map<number, { score: number; r: number; g: number; b: number; n: number }>()
+  for (let i = 0; i < data.length; i += 4) {
+    const [h, s, l] = rgbToHsl(data[i], data[i + 1], data[i + 2])
+    if (l < 0.1 || l > 0.94 || s < 0.15) continue
+    const key = Math.round(h * 12)
+    const b = buckets.get(key) ?? { score: 0, r: 0, g: 0, b: 0, n: 0 }
+    b.score += s * (1 - Math.abs(l - 0.5))
+    b.r += data[i]
+    b.g += data[i + 1]
+    b.b += data[i + 2]
+    b.n++
+    buckets.set(key, b)
+  }
+  const colours = [...buckets.values()]
+    .filter((b) => b.n >= 4)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 3)
+    .map((b): Rgb => [b.r / b.n / 255, b.g / b.n / 255, b.b / b.n / 255])
+  paletteCache.set(url, colours)
+  return colours
+}

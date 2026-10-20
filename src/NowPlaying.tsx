@@ -1,12 +1,15 @@
 import { useEffect, useRef, useState, type RefObject } from 'react'
 import { coverUrl, DISLIKED_STARS, getRating, hasRating, isMixable, LOVED_STARS, setRating, type Status, type Track } from './lms'
 import { href } from './router'
+import { Backdrop } from './Backdrop'
+import type { Rgb } from './palette'
 import { Cover, fmtDuration, Icon } from './ui'
 
 type Clock = RefObject<{ at: number; time: number }>
 
 export function NowPlaying(props: {
   track?: Track
+  palette: Rgb[]
   status: Status | null
   clock: Clock
   onToggle: () => void
@@ -30,6 +33,7 @@ export function NowPlaying(props: {
   const playing = status?.mode === 'play'
   return (
     <section className="now" aria-label="Now playing">
+      <Backdrop colours={props.palette} playing={playing} />
       <Cover key={`cover-${track.id}`} className="now-cover" src={coverUrl(track.coverid, 600)} name={track.album ?? track.title} full />
       <div className="now-text" key={`text-${track.id}`}>
         <h1 className="now-title">{track.title}</h1>

@@ -11,7 +11,7 @@ import { Settings } from './Settings'
 import { Stats } from './Stats'
 import { useMedia } from './useMedia'
 import { go, href, useRoute, type Route } from './router'
-import { accentFromCover } from './palette'
+import { accentFromCover, paletteFromCover, type Rgb } from './palette'
 import { Icon } from './ui'
 import { VolumeControl } from './VolumeControl'
 import { PlayerPicker } from './PlayerPicker'
@@ -185,6 +185,14 @@ export default function App() {
 
   // The current cover sets the accent for the whole desk.
   const coverKey = current ? lms.coverUrl(current.coverid, 600) : ''
+  const [palette, setPalette] = useState<Rgb[]>([])
+  useEffect(() => {
+    let stale = false
+    paletteFromCover(coverKey).then((p) => !stale && setPalette(p))
+    return () => {
+      stale = true
+    }
+  }, [coverKey])
   useEffect(() => {
     accentFromCover(coverKey).then((c) => {
       document.documentElement.style.setProperty('--accent', c ?? 'var(--amber)')
@@ -502,6 +510,7 @@ export default function App() {
       <main className="stage">
         <NowPlaying
           track={current}
+          palette={palette}
           status={status}
           clock={clock}
           onToggle={togglePlay}
