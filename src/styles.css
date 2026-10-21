@@ -276,6 +276,7 @@ input[type='range'] {
 .now {
   position: relative;
   isolation: isolate;
+  container: now / inline-size;
 }
 
 .backdrop {
@@ -337,11 +338,17 @@ input[type='range'] {
 .now-title {
   margin: 0;
   font-size: clamp(2rem, 3.3vw, 3.5rem);
-  line-height: 0.98;
+  line-height: 1.04;
   font-weight: 700;
   font-variation-settings: 'opsz' 96, 'wdth' 75;
   letter-spacing: -0.015em;
   text-wrap: balance;
+  /* Long titles stop at two lines so they don't shove the controls off screen. */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
 }
 
 .now-artist {
@@ -408,6 +415,7 @@ input[type='range'] {
   place-items: center;
   width: 56px;
   height: 56px;
+  flex-shrink: 0;
   border-radius: 50%;
   background: var(--accent);
   color: var(--ink);
@@ -418,6 +426,12 @@ input[type='range'] {
   align-items: center;
   gap: 6px;
   margin-left: auto;
+}
+
+.rate {
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .transport-mix {
@@ -440,6 +454,31 @@ input[type='range'] {
   color: var(--coral);
 }
 
+/* When the side pane is too narrow for one row of controls (about a 1400x900
+   window), the rating buttons drop to a second line instead of squeezing play. */
+@media (min-width: 861px) {
+  @container now (max-width: 360px) {
+    .transport {
+      flex-wrap: wrap;
+      row-gap: 10px;
+    }
+
+    .transport-end {
+      display: contents;
+    }
+
+    .transport-mix {
+      order: 1;
+      margin-left: auto;
+    }
+
+    .rate {
+      order: 2;
+      flex-basis: 100%;
+    }
+  }
+}
+
 /* ---- buttons -------------------------------------------------------------- */
 
 .icon-btn {
@@ -447,6 +486,7 @@ input[type='range'] {
   place-items: center;
   width: 32px;
   height: 32px;
+  flex-shrink: 0;
   border-radius: 6px;
   color: var(--dim);
 }

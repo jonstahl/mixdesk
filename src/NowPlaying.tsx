@@ -36,7 +36,7 @@ export function NowPlaying(props: {
       <Backdrop colours={props.palette} playing={playing} />
       <Cover key={`cover-${track.id}`} className="now-cover" src={coverUrl(track.coverid, 600)} name={track.album ?? track.title} full />
       <div className="now-text" key={`text-${track.id}`}>
-        <h1 className="now-title">{track.title}</h1>
+        <h1 className="now-title" title={track.title}>{track.title}</h1>
         <p className="now-artist">
           {track.artist_id ? <a href={href({ page: 'artist', id: track.artist_id, name: track.artist ?? '' })}>{track.artist}</a> : track.artist}
         </p>
@@ -111,7 +111,7 @@ function Rate({ track, player, onError }: { track: Track; player: string | null;
   const dislikeLabel = disliked ? 'Disliked. Click to clear the rating' : 'Dislike this track (1 star)'
   const loveLabel = loved ? 'Loved. Click to clear the rating' : 'Love this track (5 stars)'
   return (
-    <>
+    <div className="rate">
       <button
         className={'icon-btn rate-btn dislike-btn' + (disliked ? ' is-on' : '')}
         onClick={() => rate(disliked ? 0 : 1)}
@@ -132,7 +132,7 @@ function Rate({ track, player, onError }: { track: Track; player: string | null;
       >
         <Icon name="star" size={22} />
       </button>
-    </>
+    </div>
   )
 }
 
