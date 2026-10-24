@@ -31,15 +31,6 @@ export function Icon({ name, size = 20, ...rest }: { name: IconName; size?: numb
   )
 }
 
-export function fmtDuration(secs?: number) {
-  if (secs == null || !isFinite(secs)) return ''
-  const s = Math.max(0, Math.round(secs))
-  const h = Math.floor(s / 3600)
-  const m = Math.floor((s % 3600) / 60)
-  const r = String(s % 60).padStart(2, '0')
-  return h ? `${h}:${String(m).padStart(2, '0')}:${r}` : `${m}:${r}`
-}
-
 /** Artwork, or a lettered tile tinted by album name when LMS has none. */
 export function Cover({ src, name, className, full }: { src: string; name?: string; className: string; full?: boolean }) {
   if (src) return <img className={className} src={src} alt="" loading="lazy" />

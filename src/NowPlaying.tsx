@@ -3,7 +3,8 @@ import { coverUrl, DISLIKED_STARS, getRating, hasRating, isMixable, LOVED_STARS,
 import { href } from './router'
 import { Backdrop } from './Backdrop'
 import type { Rgb } from './palette'
-import { Cover, fmtDuration, Icon } from './ui'
+import { Cover, Icon } from './ui'
+import { fmtDuration } from './format'
 
 type Clock = RefObject<{ at: number; time: number }>
 

@@ -4,7 +4,8 @@ import type { Seed, Track } from './lms'
 import { usePlayer } from './usePlayer'
 import { NowPlaying } from './NowPlaying'
 import { RunningOrder } from './RunningOrder'
-import { Draft, shownTracks, type DraftState, type Fresh } from './Draft'
+import { Draft, type DraftState, type Fresh } from './Draft'
+import { shownTracks } from './shownTracks'
 import { Search } from './Search'
 import { Library } from './Library'
 import { Settings } from './Settings'
@@ -151,10 +152,6 @@ export default function App() {
     }
   }, [player])
 
-  useEffect(() => {
-    if (status && volume === null) setVolumeState(status.volume)
-  }, [status, volume])
-
   const cur = status?.currentIndex ?? 0
   const current = tracks[cur]
   const sel = selected ?? Math.min(cur + 1, tracks.length - 1)
@@ -174,14 +171,16 @@ export default function App() {
 
   // Song first: tabs are narrow, so a trailing app name would be cut off.
   const playing = status?.mode === 'play'
+  const title = current?.title
+  const artist = current?.artist
   useEffect(() => {
-    if (!current) {
+    if (!title) {
       document.title = 'Mixdesk'
       return
     }
-    const song = current.artist ? `${current.title} — ${current.artist}` : current.title
+    const song = artist ? `${title} — ${artist}` : title
     document.title = playing ? song : `⏸ ${song}`
-  }, [current?.title, current?.artist, playing])
+  }, [title, artist, playing])
 
   // The current cover sets the accent for the whole desk.
   const coverKey = current ? lms.coverUrl(current.coverid, 600) : ''
@@ -486,7 +485,7 @@ export default function App() {
             <span className="player-name">{players[0]?.name}</span>
           )}
           <VolumeControl
-            value={volume ?? 0}
+            value={volume ?? status?.volume ?? 0}
             onChange={(v) => {
               setVolumeState(v)
               clearTimeout(volTimer.current)

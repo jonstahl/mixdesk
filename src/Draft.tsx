@@ -18,14 +18,6 @@ export type Fresh = { on: boolean; max: number }
 
 const FRESH_PRESETS = [0, 2, 5]
 
-/** The seed track stays whatever its play count: it's what the mix is built from. */
-export function shownTracks(draft: DraftState, fresh: Fresh): Track[] {
-  const { plays } = draft
-  if (!fresh.on || !plays) return draft.tracks
-  const seed = draft.seed.kind === 'track' ? String(draft.seed.id) : null
-  return draft.tracks.filter((t) => String(t.id) === seed || (plays[String(t.id)] ?? 0) <= fresh.max)
-}
-
 export function Draft(props: {
   draft: DraftState
   /** The tracks to list: the draft's, less any the fresh-only filter hides. */

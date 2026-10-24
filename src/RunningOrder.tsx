@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react'
 import { coverUrl, isMixable, type Track } from './lms'
-import { Cover, fmtDuration, Icon, type IconName } from './ui'
+import { Cover, Icon, type IconName } from './ui'
+import { fmtDuration } from './format'
 
 export type RowAction = { icon: IconName; label: string; key?: string; run: () => void; danger?: boolean }
 

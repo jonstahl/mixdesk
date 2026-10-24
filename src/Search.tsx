@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { canMix, coverUrl, isMixable, search, type Album, type Artist, type Seed, type Track } from './lms'
 import type { Route } from './router'
-import { Cover, fmtDuration } from './ui'
+import { Cover } from './ui'
+import { fmtDuration } from './format'
 
 type Hit =
   | { kind: 'artist'; item: Artist }

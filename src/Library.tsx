@@ -2,8 +2,10 @@ import { createContext, useContext, useEffect, useMemo, useRef, useState, type R
 import * as lms from './lms'
 import type { Album, AlbumSort, Seed, Track } from './lms'
 import { href, type Route } from './router'
+import { useLoad } from './useLoad'
 import { TrackRow } from './RunningOrder'
-import { Cover, fmtDuration, Icon } from './ui'
+import { Cover, Icon } from './ui'
+import { fmtDuration } from './format'
 
 export type LibraryActions = {
   onMix: (seed: Seed) => void
@@ -59,22 +61,6 @@ function Page(props: Props) {
 }
 
 // --- plumbing ------------------------------------------------------------------
-
-export function useLoad<T>(load: () => Promise<T>, deps: unknown[]) {
-  const [state, setState] = useState<{ data?: T; error?: string; loading: boolean }>({ loading: true })
-  useEffect(() => {
-    let stale = false
-    setState((s) => ({ data: s.data, loading: true }))
-    load().then(
-      (data) => !stale && setState({ data, loading: false }),
-      (e) => !stale && setState({ error: e instanceof Error ? e.message : String(e), loading: false }),
-    )
-    return () => {
-      stale = true
-    }
-  }, deps) // eslint-disable-line react-hooks/exhaustive-deps
-  return state
-}
 
 export function PageHead(props: { up?: Route; upLabel?: string; title: ReactNode; meta?: ReactNode; children?: ReactNode }) {
   return (
