@@ -506,4 +506,11 @@ export async function getRating(trackId: number): Promise<number> {
   return Number(r.rating ?? 0)
 }
 
-export const setRating = (p: string, trackId: number, stars: number) => rpc(p, ['trackstat', 'setrating', trackId, stars])
+/** Mixes leave out tracks TrackStat has at 1 star, the dislike button's rating. */
+export async function dropDisliked(tracks: Track[]): Promise<Track[]> {
+  if (!tracks.length || !(await hasRating())) return tracks
+  const stars = await Promise.all(tracks.map((t) => getRating(t.id).catch(() => 0)))
+  return tracks.filter((_, i) => stars[i] !== 1)
+}
+
+export const setRating =(p: string, trackId: number, stars: number) => rpc(p, ['trackstat', 'setrating', trackId, stars])

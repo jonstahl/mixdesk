@@ -263,7 +263,7 @@ export default function App() {
       }
       setDraft((d) => (d && d.seed === seed ? { ...d, loading: true } : { seed, tracks: [], loading: true }))
       try {
-        let mix = await lms.previewMix(player, seed)
+        let mix = await lms.dropDisliked(await lms.previewMix(player, seed))
         // Play counts are fetched even with the filter off, so turning it on is instant.
         let plays = canCount ? await lms.getPlayCounts(mix.map((t) => t.id)).catch(() => undefined) : undefined
         if (plays && freshRef.current.on) {
@@ -272,7 +272,7 @@ export default function App() {
           for (let n = 0; n < TOP_UPS; n++) {
             if (shownTracks({ seed, tracks: mix, plays, loading: false }, freshRef.current).length >= want) break
             const have = new Set(mix.map((t) => String(t.id)))
-            const more = (await lms.previewMix(player, seed)).filter((t) => !have.has(String(t.id)))
+            const more = (await lms.dropDisliked(await lms.previewMix(player, seed))).filter((t) => !have.has(String(t.id)))
             if (!more.length) break
             mix = [...mix, ...more]
             plays = { ...plays, ...(await lms.getPlayCounts(more.map((t) => t.id))) }
